@@ -4,9 +4,10 @@ import { AlertOctagon, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-reac
 interface ResultsScreenProps {
   riskPercentage: number;
   onReset: () => void;
+  onStartTracking: () => void; // ADDED
 }
 
-export function ResultsScreen({ riskPercentage, onReset }: ResultsScreenProps) {
+export function ResultsScreen({ riskPercentage, onReset, onStartTracking }: ResultsScreenProps) {
   let riskTier = 'low';
   if (riskPercentage >= 30) riskTier = 'moderate';
   if (riskPercentage >= 75) riskTier = 'high';
@@ -39,9 +40,19 @@ export function ResultsScreen({ riskPercentage, onReset }: ResultsScreenProps) {
         </div>
       </div>
 
-      <div className="p-6 bg-slate-50 border-t border-slate-100">
-        <button onClick={onReset} className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white py-4 rounded-lg text-lg font-semibold hover:bg-slate-900 transition-colors shadow-md">
-          <ArrowLeft className="w-5 h-5" /> Assess Another Plan
+      {/* MODIFIED: Dual-action progressive onboarding footer */}
+      <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col gap-3">
+        <button 
+          onClick={onStartTracking} 
+          className="w-full bg-purple-600 text-white py-4 rounded-lg text-xl font-bold hover:bg-purple-700 transition-colors shadow-md"
+        >
+          Start Live Tracking
+        </button>
+        <button 
+          onClick={onReset} 
+          className="w-full flex items-center justify-center gap-2 bg-slate-200 text-slate-700 py-3 rounded-lg text-base font-semibold hover:bg-slate-300 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" /> Recalculate Plan
         </button>
       </div>
     </div>

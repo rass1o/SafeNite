@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router';
-import { Home, BookOpen, Activity, Phone, Shield, Droplets } from 'lucide-react';
+import { Home, BookOpen, Activity, Phone, Shield } from 'lucide-react';
 
 export function Root() {
   const location = useLocation();
@@ -8,7 +8,6 @@ export function Root() {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/research', icon: BookOpen, label: 'Research' },
     { path: '/baseline', icon: Activity, label: 'Baseline' },
-    { path: '/tracker', icon: Droplets, label: 'Tracker' },
     { path: '/support', icon: Phone, label: 'Support' },
   ];
 
@@ -20,7 +19,7 @@ export function Root() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <img src="/safenite-logo.png" alt="SafeNite shield logo" className="w-9 h-9 object-contain"/>
+              <Shield className="w-8 h-8" />
               <span className="text-2xl font-semibold">SafeNite</span>
             </Link>
 
