@@ -3,10 +3,11 @@ import { ProfileScreen } from '../components/ProfileScreen';
 import { PreGameScreen } from '../components/PreGameScreen';
 import { ResultsScreen } from '../components/ResultsScreen';
 import { FrontLoadModal } from '../components/FrontLoadModal';
+import { ChecklistPage } from '../pages/ChecklistPage';
 import { ProfileData, DrinkPlan } from '../App';
 
 export function BaselinePage() {
-  const [screen, setScreen] = useState<'profile' | 'pregame' | 'results'>('profile');
+  const [screen, setScreen] = useState<'checklist' | 'profile' | 'pregame' | 'results'>('checklist');
   const [profileData, setProfileData] = useState<ProfileData>({
     weight: 150,
     sex: 'male',
@@ -35,7 +36,6 @@ export function BaselinePage() {
 
   const handleCalculate = () => {
     const totalDrinks = calculateTotalStandardDrinks();
-
     if (totalDrinks >= 3) {
       setShowFrontLoadModal(true);
     } else {
@@ -45,38 +45,17 @@ export function BaselinePage() {
 
   const calculateRisk = (rapidFlagValue: number) => {
     const totalDrinks = calculateTotalStandardDrinks();
-
-    // Widmark BAC calculation
     const r = profileData.sex === 'male' ? 0.68 : 0.55;
-    const gramsAlcohol = totalDrinks * 14; // 14g per standard drink
-    const weightKg = profileData.weight * 0.453592; // lbs to kg
-
-    // Peak BAC
+    const gramsAlcohol = totalDrinks * 14;
+    const weightKg = profileData.weight * 0.453592;
     let peakBAC = (gramsAlcohol / (weightKg * r * 1000)) * 100;
-
-    // Metabolic decay (0.015 BAC/hour)
     const decayedBAC = Math.max(0, peakBAC - drinkPlan.duration * 0.015);
-
-    // Risk calculation with modifiers
-    let baseRisk = decayedBAC * 35; // Base conversion to percentage
-
-    // Tolerance penalty
+    let baseRisk = decayedBAC * 35;
     const tolerancePenalty = (profileData.tolerance / 30) * 15;
     baseRisk += tolerancePenalty;
-
-    // History penalty
-    if (profileData.blackoutHistory) {
-      baseRisk += 20;
-    }
-
-    // Rapid consumption penalty
-    if (rapidFlagValue === 1) {
-      baseRisk *= 0.916; // The specified penalty weight
-    }
-
-    // Cap at 0-100%
+    if (profileData.blackoutHistory) baseRisk += 20;
+    if (rapidFlagValue === 1) baseRisk *= 0.916;
     const finalRisk = Math.min(100, Math.max(0, baseRisk));
-
     setRapidFlag(rapidFlagValue);
     setRiskPercentage(Math.round(finalRisk));
     setScreen('results');
@@ -87,50 +66,64 @@ export function BaselinePage() {
     calculateRisk(isFrontLoading ? 1 : 0);
   };
 
+  // Show checklist first
+  if (screen === 'checklist') {
+    return (
+      <div>
+        <ChecklistPage />
+        <div className="px-6 pb-8 md:max-w-7xl md:mx-auto">
+          <button
+            onClick={() => setScreen('profile')}
+            className="w-full bg-green-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+          >
+            Continue to Risk Assessment →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pb-20 md:pb-0 md:min-h-screen md:bg-slate-50 md:flex md:items-center md:justify-center">
       <div className="md:w-full md:max-w-[600px] md:bg-white md:shadow-xl md:rounded-lg md:overflow-hidden md:my-8">
-      {screen === 'profile' && (
-        <ProfileScreen
-          data={profileData}
-          onChange={setProfileData}
-          onNext={() => setScreen('pregame')}
-        />
-      )}
-
-      {screen === 'pregame' && (
-        <PreGameScreen
-          data={drinkPlan}
-          onChange={setDrinkPlan}
-          onBack={() => setScreen('profile')}
-          onCalculate={handleCalculate}
-          totalDrinks={calculateTotalStandardDrinks()}
-        />
-      )}
-
-      {screen === 'results' && (
-        <ResultsScreen
-          riskPercentage={riskPercentage}
-          onReset={() => {
-            setScreen('profile');
-            setDrinkPlan({
-              duration: 4,
-              standardBeer: 0,
-              craftIPA: 0,
-              shotLiquor: 0,
-              soloCup: 0,
-            });
-            setRapidFlag(0);
-          }}
-        />
-      )}
-
-      {showFrontLoadModal && (
-        <FrontLoadModal
-          totalDrinks={calculateTotalStandardDrinks()}
-          onResponse={handleFrontLoadResponse}
-        />
-      )}
+        {screen === 'profile' && (
+          <ProfileScreen
+            data={profileData}
+            onChange={setProfileData}
+            onNext={() => setScreen('pregame')}
+          />
+        )}
+        {screen === 'pregame' && (
+          <PreGameScreen
+            data={drinkPlan}
+            onChange={setDrinkPlan}
+            onBack={() => setScreen('profile')}
+            onCalculate={handleCalculate}
+            totalDrinks={calculateTotalStandardDrinks()}
+          />
+        )}
+        {screen === 'results' && (
+          <ResultsScreen
+            riskPercentage={riskPercentage}
+            onReset={() => {
+              setScreen('checklist');
+              setDrinkPlan({
+                duration: 4,
+                standardBeer: 0,
+                craftIPA: 0,
+                shotLiquor: 0,
+                soloCup: 0,
+              });
+              setRapidFlag(0);
+            }}
+          />
+        )}
+        {showFrontLoadModal && (
+          <FrontLoadModal
+            totalDrinks={calculateTotalStandardDrinks()}
+            onResponse={handleFrontLoadResponse}
+          />
+        )}
       </div>
     </div>
   );
