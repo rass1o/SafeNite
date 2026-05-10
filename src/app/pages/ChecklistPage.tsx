@@ -58,10 +58,6 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
   const completedCount = Object.values(answers).filter((a) => a !== null).length;
   const allCompleted = completedCount === checklistItems.length;
 
-  useEffect(() => {
-    onComplete?.(allCompleted);
-  }, [answers]);
-
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:bg-white">
       <div className="bg-green-600 text-white p-6 md:py-12">

@@ -103,20 +103,23 @@ export function BaselinePage() {
   };
 
   if (screen === 'checklist') {
+    // The checklist has exactly 4 items. We check if the user has answered all 4.
+    const isChecklistComplete = Object.keys(checklistAnswers).length === 4;
+
     return (
       <div>
         <ChecklistPage onAnswersChange={setChecklistAnswers} />
         <div className="px-6 pb-8 md:max-w-7xl md:mx-auto">
           <button
             onClick={() => setScreen('profile')}
-            disabled={!checklistCompleted}
-            className={`w-full py-4 rounded-lg text-lg font-semibold transition-colors ${
-              checklistCompleted
+            disabled={!isChecklistComplete}
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all shadow-md ${
+              isChecklistComplete
                 ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
-            {checklistCompleted ? 'Continue to Risk Assessment →' : 'Answer all questions to continue'}
+            {isChecklistComplete ? 'Continue to Risk Assessment →' : 'Complete checklist to continue'}
           </button>
         </div>
       </div>
@@ -147,7 +150,6 @@ export function BaselinePage() {
             riskPercentage={riskPercentage}
             onReset={() => {
               setScreen('checklist');
-              setChecklistCompleted(false);
               setDrinkPlan({
                 duration: 4,
                 standardBeer: 0,
