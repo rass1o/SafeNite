@@ -40,7 +40,7 @@ export function HomePage() {
                 { value: '1 in 6', label: 'college students experience blackouts annually' },
                 { value: '51%', label: 'of blackout episodes involve rapid consumption' },
                 { value: '3x', label: 'higher injury risk during blackout episodes' },
-                { value: '100%', label: 'evidence-based harm reduction approach' },
+                { value: '26.7%', label: 'of young adults reported binge drinking just in the past month' },
               ].map((stat) => (
                 <div key={stat.value} className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
                   <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
