@@ -8,6 +8,7 @@ import { ProfileData, DrinkPlan } from '../App';
 
 export function BaselinePage() {
   const [screen, setScreen] = useState<'checklist' | 'profile' | 'pregame' | 'results'>('checklist');
+  const [checklistCompleted, setChecklistCompleted] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     weight: 150,
     sex: 'male',
@@ -66,17 +67,21 @@ export function BaselinePage() {
     calculateRisk(isFrontLoading ? 1 : 0);
   };
 
-  // Show checklist first
   if (screen === 'checklist') {
     return (
       <div>
-        <ChecklistPage />
+        <ChecklistPage onComplete={(completed) => setChecklistCompleted(completed)} />
         <div className="px-6 pb-8 md:max-w-7xl md:mx-auto">
           <button
             onClick={() => setScreen('profile')}
-            className="w-full bg-green-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+            disabled={!checklistCompleted}
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-colors ${
+              checklistCompleted
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
-            Continue to Risk Assessment →
+            {checklistCompleted ? 'Continue to Risk Assessment →' : 'Answer all questions to continue'}
           </button>
         </div>
       </div>
@@ -107,6 +112,7 @@ export function BaselinePage() {
             riskPercentage={riskPercentage}
             onReset={() => {
               setScreen('checklist');
+              setChecklistCompleted(false);
               setDrinkPlan({
                 duration: 4,
                 standardBeer: 0,
