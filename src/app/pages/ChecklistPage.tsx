@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CheckSquare, Car, Map, Users, Utensils, CheckCircle2, XCircle } from 'lucide-react';
 
 interface ChecklistItem {
@@ -59,48 +59,52 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
   const allCompleted = completedCount === checklistItems.length;
 
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:bg-white">
-      <div className="bg-green-600 text-white p-6 md:py-12">
+    <div className="min-h-screen pb-20 md:pb-0 bg-slate-100">
+      <div className="bg-green-700 text-white p-6 md:py-12 shadow-md">
         <div className="md:max-w-7xl md:mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <CheckSquare className="w-8 h-8 md:w-12 md:h-12" />
-            <h1 className="text-3xl md:text-5xl">Safety Checklist</h1>
+            <h1 className="text-3xl md:text-5xl font-bold">Safety Checklist</h1>
           </div>
-          <p className="text-sm md:text-lg text-green-100">Complete before going out or drinking</p>
-          <div className="mt-4 bg-green-700 rounded-full h-2 md:h-3 md:max-w-2xl">
-            <div className="bg-white h-full rounded-full transition-all duration-300" style={{ width: `${(completedCount / checklistItems.length) * 100}%` }} />
+          <p className="text-sm md:text-lg text-green-100 font-medium">Complete before going out or drinking</p>
+          <div className="mt-6 bg-green-900/50 rounded-full h-2 md:h-3 md:max-w-2xl overflow-hidden">
+            <div className="bg-white h-full rounded-full transition-all duration-500 ease-out" style={{ width: `${(completedCount / checklistItems.length) * 100}%` }} />
           </div>
-          <p className="text-xs md:text-sm text-green-100 mt-2">{completedCount} of {checklistItems.length} completed</p>
+          <p className="text-xs md:text-sm text-green-100 mt-2 font-semibold tracking-wide uppercase">{completedCount} of {checklistItems.length} completed</p>
         </div>
       </div>
 
       <div className="p-6 md:py-12 space-y-6">
-        <div className="md:max-w-7xl md:mx-auto md:grid md:grid-cols-2 md:gap-6 md:space-y-0 space-y-6">
+        <div className="md:max-w-7xl md:mx-auto md:grid md:grid-cols-2 md:gap-8 md:space-y-0 space-y-8">
           {checklistItems.map((item, index) => {
             const Icon = item.icon;
             const answer = answers[item.id];
             const info = answer === true ? item.yesInfo : answer === false ? item.noInfo : null;
 
           return (
-            <div key={item.id} className="border border-slate-200 rounded-lg overflow-hidden md:h-fit">
-              <div className="bg-slate-50 p-4 md:p-6">
-                <div className="flex items-start gap-3 mb-3">
-                  <Icon className="w-6 h-6 md:w-7 md:h-7 text-slate-600 flex-shrink-0 mt-0.5" />
-                  <h3 className="text-lg md:text-xl">{index + 1}. {item.question}</h3>
+            <div key={item.id} className="bg-slate-50 border border-slate-200 shadow-sm rounded-2xl overflow-hidden flex flex-col">
+              <div className="bg-white p-6 md:p-8 flex-1">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Icon className="w-6 h-6 text-slate-600" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-bold text-slate-900 leading-snug">{index + 1}. {item.question}</h3>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={() => handleAnswer(item.id, true)} className={`flex-1 py-3 px-4 rounded-lg text-base md:text-lg font-semibold flex items-center justify-center gap-2 transition-all ${answer === true ? 'bg-green-600 text-white shadow-md' : 'bg-white border-2 border-slate-300 text-slate-700 hover:border-green-600'}`}>
+                
+                <div className="flex gap-4">
+                  <button onClick={() => handleAnswer(item.id, true)} className={`flex-1 py-4 px-4 rounded-xl text-base md:text-lg font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${answer === true ? 'bg-green-600 text-white shadow-md' : 'bg-slate-50 border-2 border-slate-200 text-slate-600 hover:border-green-500 hover:text-green-700'}`}>
                     <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6" /> Yes
                   </button>
-                  <button onClick={() => handleAnswer(item.id, false)} className={`flex-1 py-3 px-4 rounded-lg text-base md:text-lg font-semibold flex items-center justify-center gap-2 transition-all ${answer === false ? 'bg-red-600 text-white shadow-md' : 'bg-white border-2 border-slate-300 text-slate-700 hover:border-red-600'}`}>
+                  <button onClick={() => handleAnswer(item.id, false)} className={`flex-1 py-4 px-4 rounded-xl text-base md:text-lg font-bold flex items-center justify-center gap-2 transition-all active:scale-95 ${answer === false ? 'bg-red-600 text-white shadow-md' : 'bg-slate-50 border-2 border-slate-200 text-slate-600 hover:border-red-500 hover:text-red-700'}`}>
                     <XCircle className="w-5 h-5 md:w-6 md:h-6" /> No
                   </button>
                 </div>
               </div>
+              
               {info && (
-                <div className={`p-4 md:p-6 ${info.type === 'positive' ? 'bg-green-50 border-t-4 border-green-600' : info.type === 'info' ? 'bg-blue-50 border-t-4 border-blue-600' : info.type === 'warning' ? 'bg-yellow-50 border-t-4 border-yellow-600' : 'bg-red-50 border-t-4 border-red-600'}`}>
-                  <h4 className={`font-semibold mb-2 md:text-lg ${info.type === 'positive' ? 'text-green-900' : info.type === 'info' ? 'text-blue-900' : info.type === 'warning' ? 'text-yellow-900' : 'text-red-900'}`}>{info.title}</h4>
-                  <p className={`text-sm md:text-base leading-relaxed ${info.type === 'positive' ? 'text-green-800' : info.type === 'info' ? 'text-blue-800' : info.type === 'warning' ? 'text-yellow-800' : 'text-red-800'}`}>{info.content}</p>
+                <div className={`p-6 md:p-8 border-t ${info.type === 'positive' ? 'bg-green-50 border-green-200' : info.type === 'info' ? 'bg-blue-50 border-blue-200' : info.type === 'warning' ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'}`}>
+                  <h4 className={`font-bold mb-2 text-lg md:text-xl ${info.type === 'positive' ? 'text-green-900' : info.type === 'info' ? 'text-blue-900' : info.type === 'warning' ? 'text-amber-900' : 'text-red-900'}`}>{info.title}</h4>
+                  <p className={`text-base leading-relaxed font-medium ${info.type === 'positive' ? 'text-green-800' : info.type === 'info' ? 'text-blue-800' : info.type === 'warning' ? 'text-amber-800' : 'text-red-800'}`}>{info.content}</p>
                 </div>
               )}
             </div>
@@ -110,9 +114,14 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
       </div>
 
       {allCompleted && (
-        <div className="mx-6 mb-6 md:mx-auto md:max-w-7xl bg-gradient-to-r from-green-600 to-blue-600 text-white p-6 md:p-8 rounded-lg shadow-lg">
-          <h3 className="text-xl md:text-2xl mb-2">✓ Checklist Complete</h3>
-          <p className="text-sm md:text-base">You've reviewed all safety items. Remember: these are minimum precautions, not guarantees. Stay aware, look out for your friends, and don't hesitate to call for help if needed.</p>
+        <div className="mx-6 mb-12 md:mx-auto md:max-w-7xl bg-slate-900 text-white p-8 md:p-10 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+            <CheckCircle2 className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-2xl md:text-3xl font-bold mb-3">Checklist Complete</h3>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed font-medium">You've reviewed all safety items. Remember: these are minimum precautions, not guarantees. Stay aware, look out for your friends, and don't hesitate to call for help if needed.</p>
+          </div>
         </div>
       )}
     </div>

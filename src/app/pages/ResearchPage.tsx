@@ -1,10 +1,11 @@
-import { Brain, FlaskConical, Activity, Calculator, BookOpen, ChevronRight } from 'lucide-react';
+import { Brain, FlaskConical, Activity, Calculator, BookOpen, ChevronRight, Database } from 'lucide-react';
 
 export function ResearchPage() {
   return (
-    <div className="min-h-screen pb-20 md:pb-0 md:bg-slate-50">
+    <div className="min-h-screen pb-20 md:pb-0 bg-slate-100">
+      
       {/* 1. ORIGINAL BRANDED HEADER */}
-      <div className="bg-purple-600 text-white p-6 md:py-12 shadow-md">
+      <div className="bg-purple-700 text-white p-6 md:py-12 shadow-md">
         <div className="md:max-w-7xl md:mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <FlaskConical className="w-8 h-8 md:w-12 md:h-12" />
@@ -16,14 +17,14 @@ export function ResearchPage() {
         </div>
       </div>
 
-      {/* 2. THE NEW EXPLANATION & FORMULA BLOCKS */}
-      <div className="p-6 md:py-12 space-y-10">
-        <div className="md:max-w-7xl md:mx-auto space-y-10">
+      {/* 2. THE EXPLANATION & FORMULA BLOCKS */}
+      <div className="p-6 md:py-16 space-y-12">
+        <div className="md:max-w-7xl md:mx-auto space-y-12">
 
-          {/* Engine 1 */}
-          <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-purple-50 border-b border-purple-100 p-6 flex items-center gap-3">
-              <Brain className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
+          {/* Engine 1 - Purple Theme */}
+          <section className="bg-slate-50 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-purple-100 border-b border-purple-200 p-6 flex items-center gap-3">
+              <Brain className="w-6 h-6 md:w-8 md:h-8 text-purple-700" />
               <h2 className="text-xl md:text-3xl font-bold text-slate-900">Engine 1: Behavioral Baseline</h2>
             </div>
             <div className="p-6 md:p-8 space-y-6">
@@ -32,7 +33,7 @@ export function ResearchPage() {
               </p>
               
               {/* LaTeX-Style Math Block */}
-              <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 font-serif text-center text-xl md:text-2xl text-slate-800 shadow-inner overflow-x-auto">
+              <div className="bg-white rounded-xl p-8 border border-slate-200 font-serif text-center text-xl md:text-2xl text-slate-800 shadow-sm overflow-x-auto">
                 <span className="italic font-bold text-purple-700">L<sub>prior</sub></span> = -3.641 + (0.106 &times; BingeDays)
               </div>
 
@@ -50,13 +51,25 @@ export function ResearchPage() {
                   </p>
                 </div>
               </div>
+
+              {/* NEW: Bayesian Modeling & Coefficients Explanation */}
+              <div className="mt-4 bg-purple-50/60 border border-purple-100 p-6 md:p-8 rounded-xl">
+                <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                  <Database className="w-5 h-5 text-purple-600" />
+                  Deriving the Coefficients
+                </h3>
+                <p className="text-slate-700 leading-relaxed">
+                  To determine the exact mathematical weights for our baseline, we trained a <strong>Bayesian logistic regression model</strong> using the 2024 National Survey on Drug Use and Health (NSDUH) dataset. By analyzing thousands of reported collegiate drinking patterns, the model isolated the base probability of an AIB (<span className="font-serif italic text-purple-700">β<sub>0</sub> = -3.641</span>) and the precise marginal risk increase for every additional binge day (<span className="font-serif italic text-purple-700">β<sub>1</sub> = 0.106</span>).
+                </p>
+              </div>
+
             </div>
           </section>
 
-          {/* Engine 2 */}
-          <section className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-blue-50 border-b border-blue-100 p-6 flex items-center gap-3">
-              <Activity className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+          {/* Engine 2 - Blue Theme */}
+          <section className="bg-slate-50 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div className="bg-blue-100 border-b border-blue-200 p-6 flex items-center gap-3">
+              <Activity className="w-6 h-6 md:w-8 md:h-8 text-blue-700" />
               <h2 className="text-xl md:text-3xl font-bold text-slate-900">Engine 2: Real-Time Pharmacokinetics</h2>
             </div>
             <div className="p-6 md:p-8 space-y-6">
@@ -65,7 +78,7 @@ export function ResearchPage() {
               </p>
 
               {/* LaTeX-Style Math Block */}
-              <div className="bg-slate-50 rounded-xl p-8 border border-slate-200 shadow-inner space-y-8 overflow-x-auto">
+              <div className="bg-white rounded-xl p-8 border border-slate-200 shadow-sm space-y-8 overflow-x-auto">
                 <div className="flex flex-col items-center font-serif text-xl md:text-2xl text-slate-800">
                   <div className="flex items-center gap-4 whitespace-nowrap">
                     <span className="italic font-bold text-blue-700">BAC<sub>raw</sub></span> = 
@@ -76,7 +89,7 @@ export function ResearchPage() {
                     &times; 100 &minus; (0.015 &times; Hours)
                   </div>
                 </div>
-                <div className="border-t border-slate-200 pt-6 flex flex-col items-center font-serif text-xl md:text-2xl text-slate-800">
+                <div className="border-t border-slate-100 pt-6 flex flex-col items-center font-serif text-xl md:text-2xl text-slate-800">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="italic font-bold text-blue-700">L<sub>acute</sub></span> = (&gamma;<sub>bac</sub> &times; BAC<sub>final</sub>) + (&gamma;<sub>pace</sub> &times; FrontLoad)
                   </div>
@@ -100,26 +113,28 @@ export function ResearchPage() {
             </div>
           </section>
 
-          {/* The Synthesizer */}
-          <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Calculator className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
+          {/* The Synthesizer - Green Theme */}
+          <section className="bg-slate-50 rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+             <div className="bg-green-100 border-b border-green-200 p-6 flex items-center gap-3">
+              <Calculator className="w-6 h-6 md:w-8 md:h-8 text-green-700" />
               <h2 className="text-xl md:text-3xl font-bold text-slate-900">The Synthesis: Calculating Probability</h2>
             </div>
-            <p className="text-slate-700 leading-relaxed text-lg mb-8 max-w-4xl">
-              To transform the combined log-odds from Engine 1 and Engine 2 into a human-readable risk percentage, the algorithm passes the sum through a standard Sigmoid function. This accurately bounds the physical risk between 0% and 100%.
-            </p>
-            
-            <div className="bg-slate-900 text-white rounded-xl p-8 font-serif text-center text-2xl md:text-3xl shadow-lg flex items-center justify-center gap-4 overflow-x-auto">
-              <span className="italic font-bold text-green-400 whitespace-nowrap">P(Blackout)</span> = 
-              <div className="flex flex-col items-center mx-2">
-                <span className="border-b border-slate-500 px-6 pb-1">1</span>
-                <span className="px-6 pt-2">1 + e<sup>-(L<sub>prior</sub> + L<sub>acute</sub>)</sup></span>
+            <div className="p-6 md:p-8">
+              <p className="text-slate-700 leading-relaxed text-lg mb-8 max-w-4xl">
+                To transform the combined log-odds from Engine 1 and Engine 2 into a human-readable risk percentage, the algorithm passes the sum through a standard Sigmoid function. This accurately bounds the physical risk between 0% and 100%.
+              </p>
+              
+              <div className="bg-slate-900 text-white rounded-xl p-8 font-serif text-center text-2xl md:text-3xl shadow-lg flex items-center justify-center gap-4 overflow-x-auto">
+                <span className="italic font-bold text-green-400 whitespace-nowrap">P(Blackout)</span> = 
+                <div className="flex flex-col items-center mx-2">
+                  <span className="border-b border-slate-500 px-6 pb-1">1</span>
+                  <span className="px-6 pt-2">1 + e<sup>-(L<sub>prior</sub> + L<sub>acute</sub>)</sup></span>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* 3. NEW CITATION CARDS */}
+          {/* 3. CITATION CARDS */}
           <section className="pt-4 pb-12">
             <div className="flex items-center gap-3 mb-6">
               <BookOpen className="w-6 h-6 md:w-8 md:h-8 text-slate-400" />
@@ -158,8 +173,8 @@ export function ResearchPage() {
 // Helper component for clean citation cards
 function Citation({ title, author, source }: { title: string, author: string, source: string }) {
   return (
-    <div className="bg-white border border-slate-200 p-5 md:p-6 rounded-xl flex items-start gap-4 hover:border-purple-400 hover:shadow-md transition-all">
-      <ChevronRight className="w-6 h-6 text-purple-500 flex-shrink-0 mt-0.5 hidden md:block" />
+    <div className="bg-slate-50 border border-slate-200 p-5 md:p-6 rounded-xl flex items-start gap-4 hover:border-purple-300 hover:shadow-md transition-all">
+      <ChevronRight className="w-6 h-6 text-purple-600 flex-shrink-0 mt-0.5 hidden md:block" />
       <div>
         <div className="font-bold text-slate-900 text-base md:text-lg leading-snug mb-2">{title}</div>
         <div className="text-slate-600 text-sm md:text-base mb-1">{author}</div>
