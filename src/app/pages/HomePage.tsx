@@ -13,8 +13,12 @@ export function HomePage() {
           <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-10 h-10 text-blue-300" />
-                <span className="text-blue-300 text-lg font-semibold tracking-wide uppercase">SafeNite</span>
+              <img 
+                src="/safenite-logo.png" 
+                alt="SafeNite shield logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <span className="text-blue-300 text-lg font-semibold tracking-wide uppercase">SafeNite</span>
               </div>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
                 Drink smarter.<br />
@@ -199,8 +203,12 @@ export function HomePage() {
       <footer className="bg-slate-900 text-slate-400 py-10">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Shield className="w-6 h-6 text-blue-400" />
-            <span className="text-white font-semibold text-lg">SafeNite</span>
+          <img 
+            src="/safenite-logo.png" 
+            alt="SafeNite shield logo" 
+            className="w-7 h-7 object-contain"
+          />
+          <span className="text-white font-semibold text-lg">SafeNite</span>
           </div>
           <p className="text-sm mb-2">Built with evidence-based research for harm reduction.</p>
           <p className="text-sm font-semibold text-slate-300">If you're in crisis, call <span className="text-blue-400">988</span> (Suicide & Crisis Lifeline).</p>

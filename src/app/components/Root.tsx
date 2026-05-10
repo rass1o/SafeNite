@@ -20,7 +20,7 @@ export function Root() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-              <Shield className="w-8 h-8" />
+              <img src="/safenite-logo.png" alt="SafeNite shield logo" className="w-9 h-9 object-contain"/>
               <span className="text-2xl font-semibold">SafeNite</span>
             </Link>
 
