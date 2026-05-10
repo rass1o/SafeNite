@@ -109,9 +109,14 @@ export function BaselinePage() {
         <div className="px-6 pb-8 md:max-w-7xl md:mx-auto">
           <button
             onClick={() => setScreen('profile')}
-            className="w-full bg-green-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors"
+            disabled={!checklistCompleted}
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-colors ${
+              checklistCompleted
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
-            Continue to Risk Assessment →
+            {checklistCompleted ? 'Continue to Risk Assessment →' : 'Answer all questions to continue'}
           </button>
         </div>
       </div>
@@ -142,6 +147,7 @@ export function BaselinePage() {
             riskPercentage={riskPercentage}
             onReset={() => {
               setScreen('checklist');
+              setChecklistCompleted(false);
               setDrinkPlan({
                 duration: 4,
                 standardBeer: 0,

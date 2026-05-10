@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router';
-import { Home, BookOpen, Activity, Phone, Shield } from 'lucide-react';
+import { Home, BookOpen, Activity, Phone, Shield, Droplets } from 'lucide-react';
 
 export function Root() {
   const location = useLocation();
@@ -8,6 +8,7 @@ export function Root() {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/research', icon: BookOpen, label: 'Research' },
     { path: '/baseline', icon: Activity, label: 'Baseline' },
+    { path: '/tracker', icon: Droplets, label: 'Tracker' },
     { path: '/support', icon: Phone, label: 'Support' },
   ];
 

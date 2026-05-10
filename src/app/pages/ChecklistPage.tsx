@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckSquare, Car, Map, Users, Utensils, CheckCircle2, XCircle } from 'lucide-react';
 
 interface ChecklistItem {
@@ -58,6 +58,10 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
   const completedCount = Object.values(answers).filter((a) => a !== null).length;
   const allCompleted = completedCount === checklistItems.length;
 
+  useEffect(() => {
+    onComplete?.(allCompleted);
+  }, [answers]);
+
   return (
     <div className="min-h-screen pb-20 md:pb-0 md:bg-white">
       <div className="bg-green-600 text-white p-6 md:py-12">
@@ -75,11 +79,11 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
       </div>
 
       <div className="p-6 md:py-12 space-y-6">
-        <div className="md:max-w-7xl md:mx-auto md:grid md:grid-cols-2 md:gap-6 md:space-y-0 space-y-6 md:space-y-0">
-        {checklistItems.map((item, index) => {
-          const Icon = item.icon;
-          const answer = answers[item.id];
-          const info = answer === true ? item.yesInfo : answer === false ? item.noInfo : null;
+        <div className="md:max-w-7xl md:mx-auto md:grid md:grid-cols-2 md:gap-6 md:space-y-0 space-y-6">
+          {checklistItems.map((item, index) => {
+            const Icon = item.icon;
+            const answer = answers[item.id];
+            const info = answer === true ? item.yesInfo : answer === false ? item.noInfo : null;
 
           return (
             <div key={item.id} className="border border-slate-200 rounded-lg overflow-hidden md:h-fit">
