@@ -8,13 +8,17 @@ import { ProfileData, DrinkPlan } from '../App';
 
 export function BaselinePage() {
   const [screen, setScreen] = useState<'checklist' | 'profile' | 'pregame' | 'results'>('checklist');
-  const [checklistCompleted, setChecklistCompleted] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData>({
+  
+  // State to hold the answers from the ChecklistPage (Used for Fed-State discount)
+  const [checklistAnswers, setChecklistAnswers] = useState<Record<string, boolean | null>>({});
+
+  // Profile data extended to include the Engine 1 variable (bingeDays)
+  const [profileData, setProfileData] = useState<ProfileData & { bingeDays: number }>({
     weight: 150,
     sex: 'male',
-    tolerance: 0,
-    blackoutHistory: false,
+    bingeDays: 0, 
   });
+  
   const [drinkPlan, setDrinkPlan] = useState<DrinkPlan>({
     duration: 4,
     standardBeer: 0,
@@ -22,6 +26,7 @@ export function BaselinePage() {
     shotLiquor: 0,
     soloCup: 0,
   });
+  
   const [showFrontLoadModal, setShowFrontLoadModal] = useState(false);
   const [rapidFlag, setRapidFlag] = useState(0);
   const [riskPercentage, setRiskPercentage] = useState(0);
@@ -44,21 +49,51 @@ export function BaselinePage() {
     }
   };
 
+  // --- INTEGRATED TWO-ENGINE MATH ---
   const calculateRisk = (rapidFlagValue: number) => {
+    // 1. The Constants
+    const BETA_0 = -3.641;
+    const BETA_1 = 0.106;
+    const GAMMA_BAC = 30;
+    const PACING_COEF = 0.989;
+
+    // 2. Form Variables
     const totalDrinks = calculateTotalStandardDrinks();
-    const r = profileData.sex === 'male' ? 0.68 : 0.55;
+    const userBingeDays = profileData.bingeDays || 0;
+    const weightLbs = profileData.weight;
+    const hoursElapsed = drinkPlan.duration;
+    const genderConstant = profileData.sex === 'male' ? 0.68 : 0.55;
+    
+    // Extract food state from checklist.
+    const userAteFood = checklistAnswers['food'] === true;
+
+    // A. Historical Baseline Risk (Engine 1)
+    const priorLogOdds = BETA_0 + (BETA_1 * userBingeDays);
+
+    // B. Pharmacokinetic BAC (Modified Widmark Formula)
     const gramsAlcohol = totalDrinks * 14;
-    const weightKg = profileData.weight * 0.453592;
-    let peakBAC = (gramsAlcohol / (weightKg * r * 1000)) * 100;
-    const decayedBAC = Math.max(0, peakBAC - drinkPlan.duration * 0.015);
-    let baseRisk = decayedBAC * 35;
-    const tolerancePenalty = (profileData.tolerance / 30) * 15;
-    baseRisk += tolerancePenalty;
-    if (profileData.blackoutHistory) baseRisk += 20;
-    if (rapidFlagValue === 1) baseRisk *= 0.916;
-    const finalRisk = Math.min(100, Math.max(0, baseRisk));
+    const weightGrams = weightLbs * 453.592;
+    let rawBac = ((gramsAlcohol) / (weightGrams * genderConstant) * 100) - (0.015 * hoursElapsed);
+
+    // C. Fed-State Discount
+    if (userAteFood) {
+      rawBac = rawBac * 0.75;
+    }
+
+    // D. Normalize BAC (Cannot drop below 0)
+    const finalBac = Math.max(0, rawBac);
+
+    // E. Acute Log Odds (Engine 2)
+    const acuteLogOdds = (GAMMA_BAC * finalBac) + (PACING_COEF * rapidFlagValue);
+
+    // F. Final Probability (Sigmoid)
+    const totalLogOdds = priorLogOdds + acuteLogOdds;
+    const probability = 1 / (1 + Math.exp(-totalLogOdds));
+
+    const finalRisk = Math.round(probability * 100);
+
     setRapidFlag(rapidFlagValue);
-    setRiskPercentage(Math.round(finalRisk));
+    setRiskPercentage(finalRisk);
     setScreen('results');
   };
 
@@ -68,20 +103,23 @@ export function BaselinePage() {
   };
 
   if (screen === 'checklist') {
+    // The checklist has exactly 4 items. We check if the user has answered all 4.
+    const isChecklistComplete = Object.keys(checklistAnswers).length === 4;
+
     return (
       <div>
-        <ChecklistPage onComplete={(completed) => setChecklistCompleted(completed)} />
+        <ChecklistPage onAnswersChange={setChecklistAnswers} />
         <div className="px-6 pb-8 md:max-w-7xl md:mx-auto">
           <button
             onClick={() => setScreen('profile')}
-            disabled={!checklistCompleted}
-            className={`w-full py-4 rounded-lg text-lg font-semibold transition-colors ${
-              checklistCompleted
+            disabled={!isChecklistComplete}
+            className={`w-full py-4 rounded-lg text-lg font-semibold transition-all shadow-md ${
+              isChecklistComplete
                 ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-slate-300 text-slate-500 cursor-not-allowed'
             }`}
           >
-            {checklistCompleted ? 'Continue to Risk Assessment →' : 'Answer all questions to continue'}
+            {isChecklistComplete ? 'Continue to Risk Assessment →' : 'Complete checklist to continue'}
           </button>
         </div>
       </div>
@@ -112,7 +150,6 @@ export function BaselinePage() {
             riskPercentage={riskPercentage}
             onReset={() => {
               setScreen('checklist');
-              setChecklistCompleted(false);
               setDrinkPlan({
                 duration: 4,
                 standardBeer: 0,
@@ -121,6 +158,7 @@ export function BaselinePage() {
                 soloCup: 0,
               });
               setRapidFlag(0);
+              setChecklistAnswers({}); 
             }}
           />
         )}

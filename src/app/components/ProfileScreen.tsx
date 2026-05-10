@@ -1,123 +1,59 @@
+import React from 'react';
+import { User, Activity, CalendarDays, AlertTriangle, Scale } from 'lucide-react';
 import { ProfileData } from '../App';
-import * as Slider from '@radix-ui/react-slider';
-import * as Switch from '@radix-ui/react-switch';
+
+interface ExtendedProfileData extends ProfileData {
+  bingeDays: number;
+}
 
 interface ProfileScreenProps {
-  data: ProfileData;
-  onChange: (data: ProfileData) => void;
+  data: ExtendedProfileData;
+  onChange: (data: ExtendedProfileData) => void;
   onNext: () => void;
 }
 
 export function ProfileScreen({ data, onChange, onNext }: ProfileScreenProps) {
   return (
-    <div className="flex flex-col min-h-screen pb-32">
-      <div className="p-6 bg-blue-600 text-white">
-        <h1 className="text-2xl">Your Profile</h1>
-        <p className="text-sm text-blue-100 mt-1">Tell us about your baseline</p>
+    <div className="flex flex-col h-full bg-white">
+      <div className="bg-slate-900 text-white p-6 md:py-8">
+        <div className="flex items-center gap-3 mb-2">
+          <User className="w-8 h-8 text-blue-400" />
+          <h2 className="text-2xl md:text-3xl font-bold">Your Profile</h2>
+        </div>
+        <p className="text-slate-300 text-sm md:text-base">This data ensures accurate physiological risk calculations.</p>
       </div>
 
-      <div className="flex-1 p-6 space-y-8">
-        {/* Weight Slider */}
-        <div>
-          <label className="block text-sm mb-3">
-            Weight: <span className="font-semibold">{data.weight} lbs</span>
-          </label>
-          <Slider.Root
-            className="relative flex items-center select-none touch-none w-full h-12"
-            value={[data.weight]}
-            onValueChange={([value]) => onChange({ ...data, weight: value })}
-            min={100}
-            max={300}
-            step={5}
-          >
-            <Slider.Track className="bg-slate-200 relative grow rounded-full h-3">
-              <Slider.Range className="absolute bg-blue-600 rounded-full h-full" />
-            </Slider.Track>
-            <Slider.Thumb className="block w-8 h-8 bg-white border-4 border-blue-600 rounded-full shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200" />
-          </Slider.Root>
-        </div>
+      <div className="flex-1 p-6 space-y-8 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><Scale className="w-4 h-4 text-slate-500" /> Weight (lbs)</label>
+            <input type="number" min="80" max="400" value={data.weight || ''} onChange={(e) => onChange({ ...data, weight: Number(e.target.value) })} className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="e.g., 150" />
+          </div>
 
-        {/* Sex Toggle */}
-        <div>
-          <label className="block text-sm mb-3">Sex</label>
-          <div className="flex gap-3">
-            <button
-              onClick={() => onChange({ ...data, sex: 'male' })}
-              className={`flex-1 py-4 px-6 rounded-lg text-lg font-semibold transition-all ${
-                data.sex === 'male'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              Male
-            </button>
-            <button
-              onClick={() => onChange({ ...data, sex: 'female' })}
-              className={`flex-1 py-4 px-6 rounded-lg text-lg font-semibold transition-all ${
-                data.sex === 'female'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              Female
-            </button>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><User className="w-4 h-4 text-slate-500" /> Sex at Birth</label>
+            <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button onClick={() => onChange({ ...data, sex: 'male' })} className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${data.sex === 'male' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Male</button>
+              <button onClick={() => onChange({ ...data, sex: 'female' })} className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${data.sex === 'female' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500'}`}>Female</button>
+            </div>
           </div>
         </div>
 
-        {/* Tolerance Slider */}
-        <div>
-          <label className="block text-sm mb-3">
-            Days drank heavily this month: <span className="font-semibold">{data.tolerance}</span>
-          </label>
-          <Slider.Root
-            className="relative flex items-center select-none touch-none w-full h-12"
-            value={[data.tolerance]}
-            onValueChange={([value]) => onChange({ ...data, tolerance: value })}
-            min={0}
-            max={30}
-            step={1}
-          >
-            <Slider.Track className="bg-slate-200 relative grow rounded-full h-3">
-              <Slider.Range className="absolute bg-orange-600 rounded-full h-full" />
-            </Slider.Track>
-            <Slider.Thumb className="block w-8 h-8 bg-white border-4 border-orange-600 rounded-full shadow-lg hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-orange-200" />
-          </Slider.Root>
-        </div>
+        <hr className="border-slate-100" />
 
-        {/* Blackout History Toggle */}
-        <div>
-          <label className="block text-sm mb-3">Blacked out in the past 6 months?</label>
-          <div className="flex gap-3">
-            <button
-              onClick={() => onChange({ ...data, blackoutHistory: false })}
-              className={`flex-1 py-4 px-6 rounded-lg text-lg font-semibold transition-all ${
-                !data.blackoutHistory
-                  ? 'bg-green-600 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              No
-            </button>
-            <button
-              onClick={() => onChange({ ...data, blackoutHistory: true })}
-              className={`flex-1 py-4 px-6 rounded-lg text-lg font-semibold transition-all ${
-                data.blackoutHistory
-                  ? 'bg-red-600 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              Yes
-            </button>
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700"><CalendarDays className="w-4 h-4 text-blue-500" /> Binge Drinking Frequency</label>
+          <p className="text-xs text-slate-500">How many days in the past 30 days did you consume 4+ drinks (female) or 5+ drinks (male)?</p>
+          <div className="flex items-center gap-4">
+            <input type="range" min="0" max="30" value={data.bingeDays} onChange={(e) => onChange({ ...data, bingeDays: Number(e.target.value) })} className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+            <span className="w-12 text-center font-bold text-lg text-slate-700">{data.bingeDays}</span>
           </div>
         </div>
       </div>
 
-      <div className="fixed bottom-[60px] left-0 right-0 p-6 border-t border-slate-200 bg-white max-w-[480px] mx-auto md:static md:max-w-none md:mt-auto">
-        <button
-          onClick={onNext}
-          className="w-full py-4 bg-blue-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-blue-700 active:bg-blue-800 transition-colors"
-        >
-          Continue to Pre-Game Plan
+      <div className="p-6 bg-slate-50 border-t border-slate-100">
+        <button onClick={onNext} disabled={!data.weight} className="w-full bg-blue-600 text-white py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          Continue to Drinks →
         </button>
       </div>
     </div>

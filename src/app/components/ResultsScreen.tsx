@@ -1,4 +1,5 @@
-import { Phone, RotateCcw, AlertCircle } from 'lucide-react';
+import React from 'react';
+import { AlertOctagon, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 interface ResultsScreenProps {
   riskPercentage: number;
@@ -6,107 +7,41 @@ interface ResultsScreenProps {
 }
 
 export function ResultsScreen({ riskPercentage, onReset }: ResultsScreenProps) {
-  const isHighRisk = riskPercentage >= 60;
+  let riskTier = 'low';
+  if (riskPercentage >= 30) riskTier = 'moderate';
+  if (riskPercentage >= 75) riskTier = 'high';
 
-  const getRiskColor = () => {
-    if (riskPercentage < 30) return 'text-green-600';
-    if (riskPercentage < 60) return 'text-yellow-600';
-    return 'text-red-600';
+  const config = {
+    low: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: CheckCircle, title: 'Low Risk', message: 'Your predicted physiological risk of an alcohol-induced blackout is low based on this plan. Remember to pace yourself and stay hydrated.' },
+    moderate: { color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', icon: AlertTriangle, title: 'Elevated Risk', message: 'You have a significant risk of experiencing a blackout. Consider slowing your drinking pace, eating food, or reducing your total alcohol intake.' },
+    high: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: AlertOctagon, title: 'Critical Risk', message: 'WARNING: This drinking plan carries a severely high probability of an alcohol-induced blackout. You are strongly advised to reconsider this plan for your physical safety.' }
   };
 
-  const getRiskLabel = () => {
-    if (riskPercentage < 30) return 'Low Risk';
-    if (riskPercentage < 60) return 'Moderate Risk';
-    return 'High Risk';
-  };
+  const activeConfig = config[riskTier as keyof typeof config];
+  const Icon = activeConfig.icon;
 
   return (
-    <div className={`flex flex-col min-h-screen pb-32 ${isHighRisk ? 'bg-red-50' : 'bg-white'}`}>
-      <div className={`p-6 ${isHighRisk ? 'bg-red-600' : 'bg-blue-600'} text-white`}>
-        <h1 className="text-2xl">Your Risk Assessment</h1>
-        <p className="text-sm mt-1 opacity-90">Based on your profile and plan</p>
+    <div className="flex flex-col h-full bg-white">
+      <div className="bg-slate-900 text-white p-6 md:py-8">
+        <h2 className="text-2xl md:text-3xl font-bold">Risk Assessment</h2>
+        <p className="text-slate-300 text-sm md:text-base">Physiological blackout probability</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center justify-center">
-        {/* Risk Gauge */}
-        <div className="text-center mb-8">
-          <div className={`text-8xl mb-4 ${getRiskColor()}`}>{riskPercentage}%</div>
-          <div className={`text-2xl ${getRiskColor()}`}>{getRiskLabel()}</div>
+      <div className="flex-1 p-6 space-y-10 flex flex-col justify-center items-center">
+        <div className={`relative flex items-center justify-center w-56 h-56 rounded-full border-[12px] shadow-lg ${activeConfig.border} ${activeConfig.bg}`}>
+          <span className={`text-7xl font-black tracking-tighter ${activeConfig.color}`}>{riskPercentage}%</span>
         </div>
 
-        {/* Visual Risk Bar */}
-        <div className="w-full max-w-sm mb-12">
-          <div className="h-6 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ${
-                riskPercentage < 30
-                  ? 'bg-green-600'
-                  : riskPercentage < 60
-                  ? 'bg-yellow-600'
-                  : 'bg-red-600'
-              }`}
-              style={{ width: `${Math.min(100, riskPercentage)}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs text-slate-500 mt-2">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
-          </div>
+        <div className={`w-full p-6 rounded-xl border-2 ${activeConfig.border} ${activeConfig.bg} text-center space-y-3`}>
+          <div className="flex justify-center mb-4"><Icon className={`w-12 h-12 ${activeConfig.color}`} /></div>
+          <h3 className={`text-2xl font-bold ${activeConfig.color}`}>{activeConfig.title}</h3>
+          <p className="text-slate-700 text-lg leading-relaxed font-medium">{activeConfig.message}</p>
         </div>
-
-        {/* High Risk Intervention */}
-        {isHighRisk && (
-          <div className="w-full max-w-sm space-y-6">
-            <div className="bg-red-100 border-2 border-red-300 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-900">
-                Your physiological risk level is elevated. Please consider safer transportation
-                options.
-              </p>
-            </div>
-
-            {/* Safe Ride Button */}
-            <a
-              href="tel:+15307523222"
-              className="block w-full py-6 px-6 bg-red-600 text-white text-xl font-semibold rounded-lg shadow-lg hover:bg-red-700 active:bg-red-800 transition-colors flex items-center justify-center gap-3"
-            >
-              <Phone className="w-6 h-6" />
-              Call UC Davis Safe Ride
-            </a>
-
-            {/* Compassionate Nudge */}
-            <p className="text-center text-sm text-slate-700 px-4">
-              Not comfortable using SafeRide?{' '}
-              <span className="font-semibold">
-                Please text a roommate or friend to come get you.
-              </span>{' '}
-              Your physiological risk level is too high to navigate alone tonight.
-            </p>
-          </div>
-        )}
-
-        {/* Low/Moderate Risk Message */}
-        {!isHighRisk && (
-          <div className="w-full max-w-sm">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-              <p className="text-slate-700">
-                {riskPercentage < 30
-                  ? 'Your risk appears manageable based on the current plan. Still, please drink water, pace yourself, and stay with friends.'
-                  : 'Moderate risk detected. Consider slowing down, drinking water between drinks, and having a plan to get home safely.'}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className="fixed bottom-[60px] left-0 right-0 p-6 border-t border-slate-200 bg-white max-w-[480px] mx-auto md:static md:max-w-none md:mt-auto">
-        <button
-          onClick={onReset}
-          className="w-full py-4 bg-slate-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-slate-700 active:bg-slate-800 transition-colors flex items-center justify-center gap-2"
-        >
-          <RotateCcw className="w-5 h-5" />
-          Start New Assessment
+      <div className="p-6 bg-slate-50 border-t border-slate-100">
+        <button onClick={onReset} className="w-full flex items-center justify-center gap-2 bg-slate-800 text-white py-4 rounded-lg text-lg font-semibold hover:bg-slate-900 transition-colors shadow-md">
+          <ArrowLeft className="w-5 h-5" /> Assess Another Plan
         </button>
       </div>
     </div>
