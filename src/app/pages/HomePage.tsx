@@ -13,20 +13,18 @@ export function HomePage() {
           <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <img src="/safenite-logo.png" alt="SafeNite" className="w-8 h-8 object-contain" />
-                <span className="text-blue-300 text-lg font-semibold tracking-wide uppercase">SafeNite</span>
               </div>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
-                Drink smarter.<br />
-                <span className="text-blue-300">Stay safer.</span>
+                Safety is the first step...<br />
+                <span className="text-blue-300">to having a great night!</span>
               </h1>
               <p className="text-xl text-blue-100 leading-relaxed mb-8">
-                Your evidence-based companion for safer drinking decisions and blackout prevention. Built on peer-reviewed research, not judgment.
+                SafeNite is a real-time, clinical harm-reduction web app that predicts the exact physiological probability of an Alcohol-Induced Blackout (AIB) using a Two-Engine Bayesian model.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/baseline"
                   className="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
-                  Start Risk Assessment <ArrowRight className="w-5 h-5" />
+                  Get Started <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link to="/research"
                   className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 transition-colors text-center">
