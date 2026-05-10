@@ -30,16 +30,10 @@ export function FrontLoadModal({ totalDrinks, onResponse }: FrontLoadModalProps)
           </p>
 
           <div className="flex gap-3 w-full">
-            <button
-              onClick={() => onResponse(false)}
-              className="flex-1 py-4 px-6 rounded-lg text-lg md:text-xl font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300 transition-colors"
-            >
+            <button onClick={() => onResponse(false)} className="flex-1 py-4 px-6 rounded-lg text-lg md:text-xl font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 active:bg-slate-300 transition-colors">
               No
             </button>
-            <button
-              onClick={() => onResponse(true)}
-              className="flex-1 py-4 px-6 rounded-lg text-lg md:text-xl font-semibold bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 transition-colors"
-            >
+            <button onClick={() => onResponse(true)} className="flex-1 py-4 px-6 rounded-lg text-lg md:text-xl font-semibold bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 transition-colors">
               Yes
             </button>
           </div>
