@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router'; // ADDED
+import { useNavigate } from 'react-router';
 import { ProfileScreen } from '../components/ProfileScreen';
 import { PreGameScreen } from '../components/PreGameScreen';
 import { ResultsScreen } from '../components/ResultsScreen';
@@ -8,7 +8,7 @@ import { ChecklistPage } from '../pages/ChecklistPage';
 import { ProfileData, DrinkPlan } from '../App';
 
 export function BaselinePage() {
-  const navigate = useNavigate(); // ADDED
+  const navigate = useNavigate();
   const [screen, setScreen] = useState<'checklist' | 'profile' | 'pregame' | 'results'>('checklist');
   const [checklistAnswers, setChecklistAnswers] = useState<Record<string, boolean | null>>({});
   const [profileData, setProfileData] = useState<ProfileData & { bingeDays: number }>({
@@ -28,6 +28,9 @@ export function BaselinePage() {
   const [showFrontLoadModal, setShowFrontLoadModal] = useState(false);
   const [rapidFlag, setRapidFlag] = useState(0);
   const [riskPercentage, setRiskPercentage] = useState(0);
+  
+  // ADDED: State to hold the breakdown details for the Results Screen
+  const [mathBreakdown, setMathBreakdown] = useState<any>(null);
 
   const calculateTotalStandardDrinks = () => {
     return (
@@ -77,6 +80,15 @@ export function BaselinePage() {
     const probability = 1 / (1 + Math.exp(-totalLogOdds));
 
     const finalRisk = Math.round(probability * 100);
+
+    // ADDED: Save the details so the ResultsScreen can explain them
+    setMathBreakdown({
+      totalDrinks: totalDrinks,
+      estimatedBAC: finalBac,
+      ateFood: userAteFood,
+      frontLoaded: rapidFlagValue === 1,
+      bingeDays: userBingeDays
+    });
 
     setRapidFlag(rapidFlagValue);
     setRiskPercentage(finalRisk);
@@ -133,6 +145,7 @@ export function BaselinePage() {
         {screen === 'results' && (
           <ResultsScreen
             riskPercentage={riskPercentage}
+            breakdown={mathBreakdown} // ADDED
             onReset={() => {
               setScreen('checklist');
               setDrinkPlan({
@@ -143,10 +156,10 @@ export function BaselinePage() {
                 soloCup: 0,
               });
               setRapidFlag(0);
+              setMathBreakdown(null); // Clear breakdown on reset
               setChecklistAnswers({}); 
             }}
             onStartTracking={() => {
-              // Pass the exact Two-Engine state to the locked tracker route
               navigate('/tracker', {
                 state: {
                   weightLbs: profileData.weight,
