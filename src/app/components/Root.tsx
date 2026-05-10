@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router';
-import { Home, BookOpen, Activity, Phone, Shield, Droplets } from 'lucide-react';
+import { Home, BookOpen, Activity, Phone, Droplets } from 'lucide-react';
 
 export function Root() {
   const location = useLocation();
@@ -12,6 +12,21 @@ export function Root() {
     { path: '/support', icon: Phone, label: 'Support' },
   ];
 
+  const footer = (
+    <footer className="bg-slate-900 text-slate-400 py-10">
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <img src="/safenite-logo.png" alt="SafeNite" className="w-6 h-6 object-contain" />
+          <span className="text-white font-semibold text-lg">SafeNite</span>
+        </div>
+        <p className="text-sm mb-2">Built with evidence-based research for harm reduction.</p>
+        <p className="text-sm font-semibold text-slate-300">
+          If you're in crisis, call <span className="text-blue-400">988</span> (Suicide & Crisis Lifeline).
+        </p>
+      </div>
+    </footer>
+  );
+
   return (
     <div className="size-full bg-slate-50">
       {/* Desktop: Top Navigation */}
@@ -20,7 +35,7 @@ export function Root() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <img src="/safenite-logo.png" alt="SafeNite" className="w-8 h-8 object-contain" />
+              <img src="/safenite-logo.png" alt="SafeNite" className="w-8 h-8 object-contain" />
               <span className="text-2xl font-semibold">SafeNite</span>
             </Link>
 
@@ -29,7 +44,6 @@ export function Root() {
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
-
                 return (
                   <Link
                     key={item.path}
@@ -56,15 +70,15 @@ export function Root() {
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto">
             <Outlet />
+            {footer}
           </div>
 
           {/* Mobile: Bottom Navigation */}
-          <nav className="border-t border-slate-200 bg-white">
+          <nav className="border-t border-slate-200 bg-white sticky bottom-0">
             <div className="flex justify-around">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 const Icon = item.icon;
-
                 return (
                   <Link
                     key={item.path}
@@ -85,9 +99,10 @@ export function Root() {
         </div>
       </div>
 
-      {/* Desktop: Full-width content */}
+      {/* Desktop: Full-width content + footer */}
       <div className="hidden md:block">
         <Outlet />
+        {footer}
       </div>
     </div>
   );

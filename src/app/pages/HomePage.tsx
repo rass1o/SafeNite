@@ -194,19 +194,6 @@ export function HomePage() {
           </div>
         </div>
       </section>
- 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-10">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/safenite-logo.png" alt="SafeNite" className="w-8 h-8 object-contain" />
-            <span className="text-white font-semibold text-lg">SafeNite</span>
-          </div>
-          <p className="text-sm mb-2">Built with evidence-based research for harm reduction.</p>
-          <p className="text-sm font-semibold text-slate-300">If you're in crisis, call <span className="text-blue-400">988</span> (Suicide & Crisis Lifeline).</p>
-        </div>
-      </footer>
- 
     </div>
   );
 }
