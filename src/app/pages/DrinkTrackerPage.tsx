@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router'; // ADDED
-import { Plus, Minus, Phone, Clock, Droplets, Utensils, Users, Car, ShieldAlert } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router';
+import { Plus, Minus, Phone, Clock, Droplets, Utensils, Users, Car, ShieldAlert, FlaskConical } from 'lucide-react';
 
 interface DrinkEntry {
   id: string;
   type: string;
   standardDrinks: number;
   time: Date;
+  label?: string; // Added to support custom labels
 }
 
 interface DrinkType {
@@ -20,7 +21,6 @@ const DRINK_TYPES: Record<string, DrinkType> = {
   beer: { label: 'Beer', standardDrinks: 0.8, color: '#2563eb', bgColor: '#eff6ff' },
   craftIPA: { label: 'Craft IPA', standardDrinks: 1.9, color: '#7c3aed', bgColor: '#f5f3ff' },
   shot: { label: 'Shot', standardDrinks: 1.0, color: '#dc2626', bgColor: '#fef2f2' },
-  soloCup: { label: 'Solo cup', standardDrinks: 2.0, color: '#d97706', bgColor: '#fffbeb' },
   wine: { label: 'Wine', standardDrinks: 1.0, color: '#9d174d', bgColor: '#fdf2f8' },
   cocktail: { label: 'Cocktail', standardDrinks: 1.5, color: '#0f766e', bgColor: '#f0fdfa' },
 };
@@ -28,19 +28,18 @@ const DRINK_TYPES: Record<string, DrinkType> = {
 export function DrinkTrackerPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Strict typing for the state passed from BaselinePage
   const engineState = location.state as { weightLbs: number, sex: string, bingeDays: number, userAteFood: boolean } | null;
 
   const [log, setLog] = useState<DrinkEntry[]>([]);
   const [sessionStart] = useState<Date>(new Date());
   const [now, setNow] = useState<Date>(new Date());
+  
+  // NEW: State for the custom drink inputs
+  const [customOz, setCustomOz] = useState<number>(12);
+  const [customAbv, setCustomAbv] = useState<number>(5.0);
 
-  // Security lockdown: Boot users back to Baseline if they bypass the URL
   useEffect(() => {
-    if (!engineState) {
-      navigate('/baseline');
-    }
+    if (!engineState) navigate('/baseline');
   }, [engineState, navigate]);
 
   useEffect(() => {
@@ -49,29 +48,22 @@ export function DrinkTrackerPage() {
   }, []);
 
   if (!engineState) return null;
-
   const { weightLbs, sex, bingeDays, userAteFood } = engineState;
 
   const hoursElapsed = (now.getTime() - sessionStart.getTime()) / 3600000;
   const totalStandardDrinks = log.reduce((sum, e) => sum + e.standardDrinks, 0);
 
-  // TWO-ENGINE MATH FOR THE TRACKER
   const calculateProbabilityAndBAC = () => {
     const BETA_0 = -3.641;
     const BETA_1 = 0.106;
     const GAMMA_BAC = 30;
-
     const priorLogOdds = BETA_0 + (BETA_1 * bingeDays);
-
     const r = sex === 'male' ? 0.68 : 0.55;
     const weightKg = weightLbs * 0.453592;
     const gramsAlcohol = totalStandardDrinks * 14;
     
     let rawBac = ((gramsAlcohol / (weightKg * r * 1000)) * 100) - (hoursElapsed * 0.015);
-    
-    if (userAteFood) {
-      rawBac *= 0.75;
-    }
+    if (userAteFood) rawBac *= 0.75;
 
     const finalBac = Math.max(0, rawBac);
     const acuteLogOdds = GAMMA_BAC * finalBac;
@@ -102,13 +94,25 @@ export function DrinkTrackerPage() {
     }]);
   };
 
+  // NEW: Calculate and add custom drink
+  const addCustomDrink = () => {
+    const stdDrinks = (customOz * (customAbv / 100)) / 0.6;
+    setLog(prev => [...prev, {
+      id: Math.random().toString(36).slice(2),
+      type: 'custom',
+      label: `Custom (${customAbv}% / ${customOz}oz)`,
+      standardDrinks: stdDrinks,
+      time: new Date(),
+    }]);
+  };
+
   const removeLast = () => setLog(prev => prev.slice(0, -1));
   const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const timeUntilSober = Math.ceil(bac / 0.015);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24 md:pb-0">
-      {/* Header */}
+      {/* Header (Remains exactly the same) */}
       <div className="bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-6 py-6 md:py-10">
           <div className="flex items-center justify-between">
@@ -166,10 +170,7 @@ export function DrinkTrackerPage() {
           {/* THE BIG BUTTON UI */}
           {!isCriticalRisk ? (
             <div className="mb-8">
-               <button 
-                 onClick={() => addDrink('beer')} 
-                 className="w-full py-8 md:py-12 bg-blue-600 text-white rounded-3xl shadow-lg active:scale-95 transition-transform flex flex-col items-center justify-center gap-2"
-               >
+               <button onClick={() => addDrink('beer')} className="w-full py-8 md:py-12 bg-blue-600 text-white rounded-3xl shadow-lg active:scale-95 transition-transform flex flex-col items-center justify-center gap-2">
                  <Plus className="w-10 h-10" />
                  <span className="text-3xl font-black tracking-tight">Quick Add Drink</span>
                  <span className="text-blue-200 text-sm font-medium">Standard 1.0 Equivalent</span>
@@ -183,7 +184,6 @@ export function DrinkTrackerPage() {
                )}
             </div>
           ) : (
-            /* HARM REDUCTION INTERCEPT */
             <div className="bg-red-50 border-l-8 border-red-600 rounded-2xl p-6 shadow-md mb-8 animate-in slide-in-from-bottom-4 fade-in duration-500">
                <div className="flex items-center gap-3 mb-4">
                   <ShieldAlert className="w-8 h-8 text-red-600" />
@@ -194,38 +194,53 @@ export function DrinkTrackerPage() {
                </p>
                <div className="space-y-3">
                   <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-red-100">
-                     <Utensils className="w-6 h-6 text-red-600 flex-shrink-0"/> 
-                     <span className="font-bold text-slate-800">Switch to water and eat immediately.</span>
+                     <Utensils className="w-6 h-6 text-red-600 flex-shrink-0"/> <span className="font-bold text-slate-800">Switch to water and eat immediately.</span>
                   </div>
                   <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-red-100">
-                     <Users className="w-6 h-6 text-red-600 flex-shrink-0"/> 
-                     <span className="font-bold text-slate-800">Locate and stay with your trusted friends.</span>
+                     <Users className="w-6 h-6 text-red-600 flex-shrink-0"/> <span className="font-bold text-slate-800">Locate and stay with your trusted friends.</span>
                   </div>
                   <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-red-100">
-                     <Car className="w-6 h-6 text-red-600 flex-shrink-0"/> 
-                     <span className="font-bold text-slate-800">Confirm your safe ride home.</span>
+                     <Car className="w-6 h-6 text-red-600 flex-shrink-0"/> <span className="font-bold text-slate-800">Confirm your safe ride home.</span>
                   </div>
                </div>
             </div>
           )}
 
-          {/* Granular Add Options */}
           {!isCriticalRisk && (
-            <div className="mb-6">
-              <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Specific Drinks</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {Object.entries(DRINK_TYPES).map(([key, drink]) => (
-                  <button
-                    key={key}
-                    onClick={() => addDrink(key)}
-                    className="flex flex-col items-center justify-center rounded-xl p-3 border border-slate-200 hover:scale-105 transition-transform active:scale-95"
-                    style={{ background: drink.bgColor }}
-                  >
-                    <div className="font-semibold text-slate-900 text-sm mb-1">{drink.label}</div>
-                    <div className="text-xs text-slate-500 font-medium">{drink.standardDrinks}x</div>
-                  </button>
-                ))}
+            <div className="mb-6 space-y-6">
+              <div>
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Specific Drinks</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.entries(DRINK_TYPES).map(([key, drink]) => (
+                    <button key={key} onClick={() => addDrink(key)} className="flex flex-col items-center justify-center rounded-xl p-3 border border-slate-200 hover:scale-105 transition-transform active:scale-95" style={{ background: drink.bgColor }}>
+                      <div className="font-semibold text-slate-900 text-sm mb-1">{drink.label}</div>
+                      <div className="text-xs text-slate-500 font-medium">{drink.standardDrinks}x</div>
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {/* NEW: Custom Drink Logger */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <FlaskConical className="w-5 h-5 text-indigo-600" />
+                  <h3 className="font-bold text-slate-700">Add Custom Drink</h3>
+                </div>
+                <div className="flex items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vol (oz)</label>
+                    <input type="number" step="0.5" value={customOz} onChange={(e) => setCustomOz(Number(e.target.value))} className="w-full p-2 rounded border border-slate-300 outline-none focus:border-indigo-500 font-medium"/>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">ABV (%)</label>
+                    <input type="number" step="0.5" value={customAbv} onChange={(e) => setCustomAbv(Number(e.target.value))} className="w-full p-2 rounded border border-slate-300 outline-none focus:border-indigo-500 font-medium"/>
+                  </div>
+                  <button onClick={addCustomDrink} className="bg-indigo-600 text-white px-4 py-2 rounded font-bold hover:bg-indigo-700 active:scale-95 transition-transform">
+                    Add
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
         </div>
@@ -245,14 +260,15 @@ export function DrinkTrackerPage() {
           ) : (
             <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
               {[...log].reverse().map((entry, i) => {
-                const drink = DRINK_TYPES[entry.type];
+                const drink = entry.type === 'custom' ? null : DRINK_TYPES[entry.type];
                 return (
                   <div key={entry.id} className={`flex items-center justify-between px-4 py-3 ${i < log.length - 1 ? 'border-b border-slate-100' : ''}`}>
                     <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: drink.color }} />
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: drink?.color || '#4f46e5' }} />
                       <div>
-                        <div className="text-sm font-semibold text-slate-900">{drink.label}</div>
-                        <div className="text-xs text-slate-400">{entry.standardDrinks} std drinks</div>
+                        {/* Dynamic label to support the custom text */}
+                        <div className="text-sm font-semibold text-slate-900">{entry.label || drink?.label}</div>
+                        <div className="text-xs text-slate-400">{entry.standardDrinks.toFixed(1)} std drinks</div>
                       </div>
                     </div>
                     <div className="text-xs text-slate-400">{formatTime(entry.time)}</div>

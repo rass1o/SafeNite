@@ -1,6 +1,46 @@
 import { DrinkPlan } from '../App';
 import * as Slider from '@radix-ui/react-slider';
-import { Beer, Wine, Flame, Minus, Plus } from 'lucide-react';
+import { Beer, Wine, Minus, Plus, FlaskConical } from 'lucide-react';
+
+interface DrinkCounterProps {
+  icon: React.ReactNode;
+  label: string;
+  sublabel: string;
+  count: number;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  color: 'amber' | 'orange' | 'red' | 'pink';
+}
+
+function DrinkCounter({ icon, label, sublabel, count, onIncrement, onDecrement, color }: DrinkCounterProps) {
+  const colorClasses = {
+    amber: 'bg-amber-100 text-amber-700',
+    orange: 'bg-orange-100 text-orange-700',
+    red: 'bg-red-100 text-red-700',
+    pink: 'bg-pink-100 text-pink-700',
+  };
+
+  const safeCount = typeof count === 'number' && !isNaN(count) ? count : 0;
+
+  return (
+    <div className={`rounded-lg p-4 ${colorClasses[color]}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div>{icon}</div>
+          <div>
+            <div className="font-semibold">{label}</div>
+            <div className="text-sm opacity-80">{sublabel}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button onClick={onDecrement} disabled={safeCount === 0} className="w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg active:shadow-sm transition-shadow disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"><Minus className="w-5 h-5" /></button>
+          <div className="w-12 text-center text-2xl font-semibold">{safeCount}</div>
+          <button onClick={onIncrement} className="w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg active:shadow-sm transition-shadow flex items-center justify-center"><Plus className="w-5 h-5" /></button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface PreGameScreenProps {
   data: DrinkPlan;
@@ -11,10 +51,16 @@ interface PreGameScreenProps {
 }
 
 export function PreGameScreen({ data, onChange, onBack, onCalculate, totalDrinks }: PreGameScreenProps) {
+  
   const updateDrink = (key: keyof DrinkPlan, delta: number) => {
-    const newValue = Math.max(0, (data[key] as number) + delta);
+    const currentValue = typeof data[key] === 'number' && !isNaN(data[key] as number) ? (data[key] as number) : 0;
+    const newValue = Math.max(0, currentValue + delta);
     onChange({ ...data, [key]: newValue });
   };
+
+  const safeCustomCount = typeof data.customDrinkCount === 'number' && !isNaN(data.customDrinkCount) ? data.customDrinkCount : 0;
+  const safeCustomOz = typeof data.customDrinkOz === 'number' && !isNaN(data.customDrinkOz) ? data.customDrinkOz : 12;
+  const safeCustomAbv = typeof data.customDrinkABV === 'number' && !isNaN(data.customDrinkABV) ? data.customDrinkABV : 5;
 
   return (
     <div className="flex flex-col min-h-screen pb-32">
@@ -41,58 +87,50 @@ export function PreGameScreen({ data, onChange, onBack, onCalculate, totalDrinks
             <DrinkCounter icon={<Beer className="w-6 h-6" />} label="Standard Beer" sublabel="(4.2% ABV)" count={data.standardBeer} onIncrement={() => updateDrink('standardBeer', 1)} onDecrement={() => updateDrink('standardBeer', -1)} color="amber" />
             <DrinkCounter icon={<Beer className="w-6 h-6" />} label="Craft IPA" sublabel="(7.0% ABV)" count={data.craftIPA} onIncrement={() => updateDrink('craftIPA', 1)} onDecrement={() => updateDrink('craftIPA', -1)} color="orange" />
             <DrinkCounter icon={<Wine className="w-6 h-6" />} label="Shot of Liquor" sublabel="(40% ABV)" count={data.shotLiquor} onIncrement={() => updateDrink('shotLiquor', 1)} onDecrement={() => updateDrink('shotLiquor', -1)} color="red" />
-            <DrinkCounter icon={<Flame className="w-6 h-6" />} label="Solo Cup Heavy Pour" sublabel="(Mixed drink)" count={data.soloCup} onIncrement={() => updateDrink('soloCup', 1)} onDecrement={() => updateDrink('soloCup', -1)} color="pink" />
+            
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-indigo-600"><FlaskConical className="w-6 h-6" /></div>
+                  <div>
+                    <div className="font-semibold text-slate-900">Custom Drink</div>
+                    <div className="text-sm opacity-80 text-slate-500">Set ABV & Volume</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => updateDrink('customDrinkCount', -1)} disabled={safeCustomCount === 0} className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"><Minus className="w-5 h-5" /></button>
+                  <div className="w-12 text-center text-2xl font-semibold">{safeCustomCount}</div>
+                  <button onClick={() => updateDrink('customDrinkCount', 1)} className="w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center"><Plus className="w-5 h-5" /></button>
+                </div>
+              </div>
+
+              {safeCustomCount > 0 && (
+                <div className="flex gap-4 pt-4 mt-4 border-t border-slate-200 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Volume (oz)</label>
+                    <input type="number" min="1" step="0.5" value={safeCustomOz} onChange={(e) => onChange({ ...data, customDrinkOz: Number(e.target.value) })} className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-semibold" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">ABV (%)</label>
+                    {/* FIXED: Changed step="0.5" to step="1" */}
+                    <input type="number" min="1" step="1" value={safeCustomAbv} onChange={(e) => onChange({ ...data, customDrinkABV: Number(e.target.value) })} className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-semibold" />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="bg-slate-100 rounded-lg p-4">
           <div className="text-sm text-slate-600">Total Standard Drinks</div>
-          <div className="text-3xl mt-1">{totalDrinks.toFixed(1)}</div>
+          <div className="text-3xl mt-1">{(typeof totalDrinks === 'number' && !isNaN(totalDrinks) ? totalDrinks : 0).toFixed(1)}</div>
         </div>
       </div>
 
       <div className="fixed bottom-[60px] left-0 right-0 p-6 border-t border-slate-200 bg-white max-w-[480px] mx-auto md:static md:max-w-none md:mt-auto">
-        <button onClick={onCalculate} disabled={totalDrinks === 0} className="w-full py-4 bg-purple-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-purple-700 active:bg-purple-800 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed">
+        <button onClick={onCalculate} disabled={!totalDrinks || totalDrinks === 0} className="w-full py-4 bg-purple-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-purple-700 active:bg-purple-800 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed">
           Calculate Risk
         </button>
-      </div>
-    </div>
-  );
-}
-
-interface DrinkCounterProps {
-  icon: React.ReactNode;
-  label: string;
-  sublabel: string;
-  count: number;
-  onIncrement: () => void;
-  onDecrement: () => void;
-  color: 'amber' | 'orange' | 'red' | 'pink';
-}
-
-function DrinkCounter({ icon, label, sublabel, count, onIncrement, onDecrement, color }: DrinkCounterProps) {
-  const colorClasses = {
-    amber: 'bg-amber-100 text-amber-700',
-    orange: 'bg-orange-100 text-orange-700',
-    red: 'bg-red-100 text-red-700',
-    pink: 'bg-pink-100 text-pink-700',
-  };
-
-  return (
-    <div className={`rounded-lg p-4 ${colorClasses[color]}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div>{icon}</div>
-          <div>
-            <div className="font-semibold">{label}</div>
-            <div className="text-sm opacity-80">{sublabel}</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={onDecrement} disabled={count === 0} className="w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg active:shadow-sm transition-shadow disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"><Minus className="w-5 h-5" /></button>
-          <div className="w-12 text-center text-2xl font-semibold">{count}</div>
-          <button onClick={onIncrement} className="w-12 h-12 rounded-full bg-white shadow-md hover:shadow-lg active:shadow-sm transition-shadow flex items-center justify-center"><Plus className="w-5 h-5" /></button>
-        </div>
       </div>
     </div>
   );

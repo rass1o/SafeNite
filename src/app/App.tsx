@@ -4,6 +4,7 @@ import { router } from './routes';
 export interface ProfileData {
   weight: number;
   sex: 'male' | 'female';
+  // Notice we completely removed tolerance and blackoutHistory here!
 }
 
 export interface DrinkPlan {
@@ -11,7 +12,9 @@ export interface DrinkPlan {
   standardBeer: number;
   craftIPA: number;
   shotLiquor: number;
-  soloCup: number;
+  customDrinkCount: number; 
+  customDrinkABV: number;   
+  customDrinkOz: number;    
 }
 
 export default function App() {

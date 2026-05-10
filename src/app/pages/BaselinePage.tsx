@@ -22,22 +22,30 @@ export function BaselinePage() {
     standardBeer: 0,
     craftIPA: 0,
     shotLiquor: 0,
-    soloCup: 0,
+    customDrinkCount: 0,
+    customDrinkABV: 5.0,
+    customDrinkOz: 12,
   });
   
   const [showFrontLoadModal, setShowFrontLoadModal] = useState(false);
   const [rapidFlag, setRapidFlag] = useState(0);
   const [riskPercentage, setRiskPercentage] = useState(0);
-  
-  // ADDED: State to hold the breakdown details for the Results Screen
   const [mathBreakdown, setMathBreakdown] = useState<any>(null);
 
+  // FIXED: Strict number casting prevents the calculation from crashing
   const calculateTotalStandardDrinks = () => {
+    const oz = Number(drinkPlan.customDrinkOz) || 0;
+    const abv = Number(drinkPlan.customDrinkABV) || 0;
+    const count = Number(drinkPlan.customDrinkCount) || 0;
+
+    const customStandardDrinks = (oz * (abv / 100)) / 0.6;
+    const totalCustom = count * customStandardDrinks;
+
     return (
-      drinkPlan.standardBeer * 0.8 +
-      drinkPlan.craftIPA * 1.9 +
-      drinkPlan.shotLiquor * 1.0 +
-      drinkPlan.soloCup * 2.0
+      (Number(drinkPlan.standardBeer) || 0) * 0.8 +
+      (Number(drinkPlan.craftIPA) || 0) * 1.9 +
+      (Number(drinkPlan.shotLiquor) || 0) * 1.0 +
+      totalCustom
     );
   };
 
@@ -81,7 +89,6 @@ export function BaselinePage() {
 
     const finalRisk = Math.round(probability * 100);
 
-    // ADDED: Save the details so the ResultsScreen can explain them
     setMathBreakdown({
       totalDrinks: totalDrinks,
       estimatedBAC: finalBac,
@@ -145,7 +152,7 @@ export function BaselinePage() {
         {screen === 'results' && (
           <ResultsScreen
             riskPercentage={riskPercentage}
-            breakdown={mathBreakdown} // ADDED
+            breakdown={mathBreakdown}
             onReset={() => {
               setScreen('checklist');
               setDrinkPlan({
@@ -153,10 +160,12 @@ export function BaselinePage() {
                 standardBeer: 0,
                 craftIPA: 0,
                 shotLiquor: 0,
-                soloCup: 0,
+                customDrinkCount: 0,
+                customDrinkABV: 5.0,
+                customDrinkOz: 12,
               });
               setRapidFlag(0);
-              setMathBreakdown(null); // Clear breakdown on reset
+              setMathBreakdown(null);
               setChecklistAnswers({}); 
             }}
             onStartTracking={() => {
