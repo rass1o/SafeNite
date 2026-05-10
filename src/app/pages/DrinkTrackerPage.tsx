@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import { Plus, Minus, Phone, Clock, Droplets, Utensils, Users, Car, ShieldAlert, FlaskConical } from 'lucide-react';
+import { Plus, Minus, Phone, Clock, Droplets, Utensils, Users, Car, ShieldAlert, FlaskConical, Trash2 } from 'lucide-react';
 
 interface DrinkEntry {
   id: string;
   type: string;
   standardDrinks: number;
   time: Date;
-  label?: string; // Added to support custom labels
+  label?: string;
 }
 
 interface DrinkType {
@@ -28,15 +28,50 @@ const DRINK_TYPES: Record<string, DrinkType> = {
 export function DrinkTrackerPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const engineState = location.state as { weightLbs: number, sex: string, bingeDays: number, userAteFood: boolean } | null;
 
-  const [log, setLog] = useState<DrinkEntry[]>([]);
-  const [sessionStart] = useState<Date>(new Date());
+  // 1. LocalStorage for Engine State (fixes refresh bug)
+  const [engineState, setEngineState] = useState<{ weightLbs: number, sex: string, bingeDays: number, userAteFood: boolean } | null>(() => {
+    if (location.state) {
+      localStorage.setItem('safenite_engine', JSON.stringify(location.state));
+      return location.state;
+    }
+    const saved = localStorage.getItem('safenite_engine');
+    if (saved) return JSON.parse(saved);
+    return null;
+  });
+
+  // 2. LocalStorage for Session Start (keeps the timer accurate after refresh)
+  const [sessionStart] = useState<Date>(() => {
+    const saved = localStorage.getItem('safenite_start');
+    if (saved) return new Date(saved);
+    const now = new Date();
+    localStorage.setItem('safenite_start', now.toISOString());
+    return now;
+  });
+
   const [now, setNow] = useState<Date>(new Date());
   
-  // NEW: State for the custom drink inputs
+  // 3. LocalStorage for the Drink Log
+  const [log, setLog] = useState<DrinkEntry[]>(() => {
+    const saved = localStorage.getItem('safenite_log');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.map((e: any) => ({ ...e, time: new Date(e.time) }));
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
+
   const [customOz, setCustomOz] = useState<number>(12);
   const [customAbv, setCustomAbv] = useState<number>(5.0);
+
+  // Sync log to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('safenite_log', JSON.stringify(log));
+  }, [log]);
 
   useEffect(() => {
     if (!engineState) navigate('/baseline');
@@ -94,7 +129,6 @@ export function DrinkTrackerPage() {
     }]);
   };
 
-  // NEW: Calculate and add custom drink
   const addCustomDrink = () => {
     const stdDrinks = (customOz * (customAbv / 100)) / 0.6;
     setLog(prev => [...prev, {
@@ -107,84 +141,97 @@ export function DrinkTrackerPage() {
   };
 
   const removeLast = () => setLog(prev => prev.slice(0, -1));
+  
+  // NEW: Function to clear local storage and end the session safely
+  const handleEndSession = () => {
+    if(window.confirm("Are you sure you want to end your night? This will clear your live tracker history.")) {
+      localStorage.removeItem('safenite_engine');
+      localStorage.removeItem('safenite_start');
+      localStorage.removeItem('safenite_log');
+      navigate('/baseline');
+    }
+  };
+
   const formatTime = (d: Date) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const timeUntilSober = Math.ceil(bac / 0.015);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24 md:pb-0">
-      {/* Header (Remains exactly the same) */}
-      <div className="bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-100 pb-24 md:pb-8">
+      
+      {/* Header */}
+      <div className="bg-slate-900 text-white shadow-md">
         <div className="max-w-4xl mx-auto px-6 py-6 md:py-10">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Droplets className="w-5 h-5 text-blue-400" />
-                <span className="text-blue-400 text-sm font-semibold uppercase tracking-wide">Live coach</span>
+                <span className="text-blue-400 text-sm font-bold uppercase tracking-wider">Live coach</span>
               </div>
-              <h1 className="text-2xl md:text-4xl font-bold">Real-time Risk</h1>
+              <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Real-time Risk</h1>
             </div>
             <div className="text-right">
-              <div className="text-slate-400 text-xs mb-1">Session started</div>
-              <div className="text-white font-semibold">{formatTime(sessionStart)}</div>
+              <div className="text-slate-400 text-xs mb-1 font-semibold uppercase tracking-wider">Session started</div>
+              <div className="text-white font-bold">{formatTime(sessionStart)}</div>
             </div>
           </div>
 
-          <div className="mt-6 md:mt-8 md:grid md:grid-cols-3 md:gap-6 md:items-center">
+          <div className="mt-8 md:mt-10 md:grid md:grid-cols-3 md:gap-8 md:items-center">
             <div className="md:col-span-2">
-              <div className="text-slate-400 text-xs mb-2 uppercase tracking-wide">Physiological Probability</div>
+              <div className="text-slate-400 text-xs mb-2 font-bold uppercase tracking-wider">Physiological Probability</div>
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="text-6xl md:text-7xl font-bold" style={{ color: status.color }}>
+                <span className="text-6xl md:text-7xl font-black tracking-tighter" style={{ color: status.color }}>
                   {Math.round(probability * 100)}%
                 </span>
-                <span className="text-slate-400 text-lg">AIB Risk</span>
+                <span className="text-slate-400 text-lg font-medium">AIB Risk</span>
               </div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full" style={{ background: status.color }}></div>
-                <span className="font-semibold" style={{ color: status.color }}>{status.label}</span>
+                <div className="w-2.5 h-2.5 rounded-full" style={{ background: status.color }}></div>
+                <span className="font-bold tracking-wide" style={{ color: status.color }}>{status.label}</span>
               </div>
-              <div className="bg-slate-700 rounded-full h-3 mb-2 max-w-md">
+              <div className="bg-slate-800 rounded-full h-3 mb-2 max-w-md overflow-hidden">
                 <div
-                  className="h-3 rounded-full transition-all duration-700"
+                  className="h-full rounded-full transition-all duration-700 ease-out"
                   style={{ width: `${Math.min(status.pct, 100)}%`, background: status.color }}
                 />
               </div>
             </div>
 
-            <div className="hidden md:flex flex-col gap-3 mt-6 md:mt-0">
-              <div className="bg-slate-800 rounded-xl p-4">
-                <div className="text-slate-400 text-xs mb-1">Total drinks</div>
-                <div className="text-white text-2xl font-bold">{totalStandardDrinks.toFixed(1)}</div>
-                <div className="text-slate-500 text-xs">standard drinks</div>
+            <div className="hidden md:flex flex-col gap-4 mt-6 md:mt-0">
+              <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-inner">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total drinks</div>
+                <div className="text-white text-3xl font-black">{totalStandardDrinks.toFixed(1)}</div>
+                <div className="text-slate-500 text-xs font-medium mt-1">standard equivalent</div>
               </div>
-              <div className="bg-slate-800 rounded-xl p-4">
-                <div className="text-slate-400 text-xs mb-1">Sober in ~</div>
-                <div className="text-white text-2xl font-bold">{bac > 0 ? timeUntilSober : 0}h</div>
+              <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-inner">
+                <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Sober in ~</div>
+                <div className="text-white text-3xl font-black">{bac > 0 ? timeUntilSober : 0}<span className="text-xl">h</span></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-6 md:grid md:grid-cols-2 md:gap-8">
+      <div className="max-w-4xl mx-auto px-6 py-8 md:grid md:grid-cols-2 md:gap-10">
         <div>
           {/* THE BIG BUTTON UI */}
           {!isCriticalRisk ? (
-            <div className="mb-8">
-               <button onClick={() => addDrink('beer')} className="w-full py-8 md:py-12 bg-blue-600 text-white rounded-3xl shadow-lg active:scale-95 transition-transform flex flex-col items-center justify-center gap-2">
-                 <Plus className="w-10 h-10" />
+            <div className="mb-10">
+               <button onClick={() => addDrink('beer')} className="w-full py-8 md:py-12 bg-blue-600 text-white rounded-3xl shadow-[0_8px_30px_rgb(37,99,235,0.3)] active:scale-95 transition-all flex flex-col items-center justify-center gap-2 border border-blue-500 hover:bg-blue-700">
+                 <Plus className="w-12 h-12 mb-1" />
                  <span className="text-3xl font-black tracking-tight">Quick Add Drink</span>
-                 <span className="text-blue-200 text-sm font-medium">Standard 1.0 Equivalent</span>
+                 <span className="text-blue-200 text-sm font-semibold uppercase tracking-wider">Standard 1.0 Equivalent</span>
                </button>
                {log.length > 0 && (
-                 <div className="flex justify-end mt-3">
-                   <button onClick={removeLast} className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-red-600 transition-colors">
+                 <div className="flex justify-end mt-4">
+                   <button onClick={removeLast} className="flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-red-600 transition-colors bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
                      <Minus className="w-4 h-4" /> Undo last entry
                    </button>
                  </div>
                )}
             </div>
           ) : (
-            <div className="bg-red-50 border-l-8 border-red-600 rounded-2xl p-6 shadow-md mb-8 animate-in slide-in-from-bottom-4 fade-in duration-500">
+            <div className="bg-red-50 border border-red-200 rounded-3xl p-6 md:p-8 shadow-lg mb-10 animate-in slide-in-from-bottom-4 fade-in duration-500 relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-2 h-full bg-red-600"></div>
                <div className="flex items-center gap-3 mb-4">
                   <ShieldAlert className="w-8 h-8 text-red-600" />
                   <h3 className="text-2xl font-black text-red-900 tracking-tight">ACTION REQUIRED</h3>
@@ -207,71 +254,71 @@ export function DrinkTrackerPage() {
           )}
 
           {!isCriticalRisk && (
-            <div className="mb-6 space-y-6">
+            <div className="mb-6 space-y-8">
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Specific Drinks</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {Object.entries(DRINK_TYPES).map(([key, drink]) => (
-                    <button key={key} onClick={() => addDrink(key)} className="flex flex-col items-center justify-center rounded-xl p-3 border border-slate-200 hover:scale-105 transition-transform active:scale-95" style={{ background: drink.bgColor }}>
-                      <div className="font-semibold text-slate-900 text-sm mb-1">{drink.label}</div>
-                      <div className="text-xs text-slate-500 font-medium">{drink.standardDrinks}x</div>
+                    <button key={key} onClick={() => addDrink(key)} className="flex flex-col items-center justify-center rounded-2xl p-4 border border-slate-200 hover:shadow-md transition-all active:scale-95 bg-white" style={{ borderLeftColor: drink.color, borderLeftWidth: '4px' }}>
+                      <div className="font-bold text-slate-900 text-sm mb-1">{drink.label}</div>
+                      <div className="text-xs text-slate-500 font-bold uppercase">{drink.standardDrinks}x std</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* NEW: Custom Drink Logger */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3">
+              {/* Custom Drink Logger */}
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-4">
                   <FlaskConical className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-bold text-slate-700">Add Custom Drink</h3>
+                  <h3 className="font-bold text-slate-900">Add Custom Drink</h3>
                 </div>
                 <div className="flex items-end gap-3">
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Vol (oz)</label>
-                    <input type="number" step="0.5" value={customOz} onChange={(e) => setCustomOz(Number(e.target.value))} className="w-full p-2 rounded border border-slate-300 outline-none focus:border-indigo-500 font-medium"/>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Vol (oz)</label>
+                    <input type="number" step="0.5" value={customOz} onChange={(e) => setCustomOz(Number(e.target.value))} className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-bold text-slate-800 bg-slate-50 transition-all"/>
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">ABV (%)</label>
-                    <input type="number" step="0.5" value={customAbv} onChange={(e) => setCustomAbv(Number(e.target.value))} className="w-full p-2 rounded border border-slate-300 outline-none focus:border-indigo-500 font-medium"/>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">ABV (%)</label>
+                    <input type="number" step="1" value={customAbv} onChange={(e) => setCustomAbv(Number(e.target.value))} className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-bold text-slate-800 bg-slate-50 transition-all"/>
                   </div>
-                  <button onClick={addCustomDrink} className="bg-indigo-600 text-white px-4 py-2 rounded font-bold hover:bg-indigo-700 active:scale-95 transition-transform">
+                  <button onClick={addCustomDrink} className="bg-indigo-600 text-white px-5 py-3 rounded-lg font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-sm">
                     Add
                   </button>
                 </div>
               </div>
-
             </div>
           )}
         </div>
 
         <div>
-          <div className="flex items-center gap-2 mb-4 mt-6 md:mt-0">
+          <div className="flex items-center gap-2 mb-5 mt-8 md:mt-0">
             <Clock className="w-5 h-5 text-slate-400" />
-            <h2 className="text-lg font-bold text-slate-900">Tonight's log</h2>
-            <span className="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">{log.length}</span>
+            <h2 className="text-xl font-bold text-slate-900">Tonight's log</h2>
+            <span className="bg-slate-200 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full ml-1">{log.length}</span>
           </div>
 
           {log.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
-              <Droplets className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <div className="text-slate-400 text-sm">No drinks logged yet</div>
+            <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center shadow-sm">
+              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Droplets className="w-8 h-8 text-slate-300" />
+              </div>
+              <div className="text-slate-500 font-medium">No drinks logged yet.<br/>Your night starts here.</div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
               {[...log].reverse().map((entry, i) => {
                 const drink = entry.type === 'custom' ? null : DRINK_TYPES[entry.type];
                 return (
-                  <div key={entry.id} className={`flex items-center justify-between px-4 py-3 ${i < log.length - 1 ? 'border-b border-slate-100' : ''}`}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: drink?.color || '#4f46e5' }} />
+                  <div key={entry.id} className={`flex items-center justify-between px-5 py-4 ${i < log.length - 1 ? 'border-b border-slate-100' : ''} hover:bg-slate-50 transition-colors`}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style={{ background: drink?.color || '#4f46e5' }} />
                       <div>
-                        {/* Dynamic label to support the custom text */}
-                        <div className="text-sm font-semibold text-slate-900">{entry.label || drink?.label}</div>
-                        <div className="text-xs text-slate-400">{entry.standardDrinks.toFixed(1)} std drinks</div>
+                        <div className="text-sm font-bold text-slate-900">{entry.label || drink?.label}</div>
+                        <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">{entry.standardDrinks.toFixed(1)} std drinks</div>
                       </div>
                     </div>
-                    <div className="text-xs text-slate-400">{formatTime(entry.time)}</div>
+                    <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">{formatTime(entry.time)}</div>
                   </div>
                 );
               })}
@@ -279,16 +326,30 @@ export function DrinkTrackerPage() {
           )}
 
           {probability >= 0.30 && (
-            <div className="mt-4 space-y-2">
-              <a href="tel:+15307523222" className="flex items-center gap-3 bg-blue-600 text-white rounded-xl px-4 py-3 hover:bg-blue-700 transition-colors">
-                <Phone className="w-5 h-5 flex-shrink-0" />
+            <div className="space-y-3 mb-8">
+              <a href="tel:+15307523222" className="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 hover:bg-amber-100 transition-colors group">
+                <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <Phone className="w-5 h-5 text-white" />
+                </div>
                 <div>
-                  <div className="text-sm font-bold">Call SafeRide</div>
-                  <div className="text-xs text-blue-200">+1-530-752-3222</div>
+                  <div className="text-sm font-bold text-amber-900">Call UC Davis SafeRide</div>
+                  <div className="text-xs font-semibold text-amber-700 mt-0.5">+1-530-752-3222</div>
                 </div>
               </a>
             </div>
           )}
+
+          {/* NEW: End Session Button */}
+          <div className="pt-6 border-t border-slate-200">
+             <button onClick={handleEndSession} className="w-full flex items-center justify-center gap-2 py-4 bg-white border-2 border-slate-200 text-slate-500 rounded-xl font-bold hover:border-red-200 hover:text-red-600 hover:bg-red-50 transition-all">
+                <Trash2 className="w-5 h-5" />
+                End Night & Clear Data
+             </button>
+             <p className="text-center text-xs text-slate-400 font-medium mt-3 px-4">
+               Ending your night will clear your active BAC calculation and drink log from your device.
+             </p>
+          </div>
+
         </div>
       </div>
     </div>

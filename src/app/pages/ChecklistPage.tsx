@@ -114,13 +114,13 @@ export function ChecklistPage({ onAnswersChange }: ChecklistPageProps) {
       </div>
 
       {allCompleted && (
-        <div className="mx-6 mb-12 md:mx-auto md:max-w-7xl bg-slate-900 text-white p-8 md:p-10 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-6 md:gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-            <CheckCircle2 className="w-8 h-8 text-white" />
+        <div className="mx-6 mb-12 md:mx-auto md:max-w-3xl bg-slate-900 text-white p-6 md:p-8 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-5 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+            <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl md:text-3xl font-bold mb-3">Checklist Complete</h3>
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed font-medium">You've reviewed all safety items. Remember: these are minimum precautions, not guarantees. Stay aware, look out for your friends, and don't hesitate to call for help if needed.</p>
+            <h3 className="text-xl md:text-2xl font-bold mb-2">Checklist Complete</h3>
+            <p className="text-sm md:text-base text-slate-300 leading-relaxed font-medium">You've reviewed all safety items. Remember: these are minimum precautions, not guarantees. Stay aware, look out for your friends, and don't hesitate to call for help if needed.</p>
           </div>
         </div>
       )}
