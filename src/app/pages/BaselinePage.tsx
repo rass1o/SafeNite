@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router'; // ADDED
 import { ProfileScreen } from '../components/ProfileScreen';
 import { PreGameScreen } from '../components/PreGameScreen';
 import { ResultsScreen } from '../components/ResultsScreen';
@@ -7,12 +8,9 @@ import { ChecklistPage } from '../pages/ChecklistPage';
 import { ProfileData, DrinkPlan } from '../App';
 
 export function BaselinePage() {
+  const navigate = useNavigate(); // ADDED
   const [screen, setScreen] = useState<'checklist' | 'profile' | 'pregame' | 'results'>('checklist');
-  
-  // State to hold the answers from the ChecklistPage (Used for Fed-State discount)
   const [checklistAnswers, setChecklistAnswers] = useState<Record<string, boolean | null>>({});
-
-  // Profile data extended to include the Engine 1 variable (bingeDays)
   const [profileData, setProfileData] = useState<ProfileData & { bingeDays: number }>({
     weight: 150,
     sex: 'male',
@@ -49,44 +47,32 @@ export function BaselinePage() {
     }
   };
 
-  // --- INTEGRATED TWO-ENGINE MATH ---
   const calculateRisk = (rapidFlagValue: number) => {
-    // 1. The Constants
     const BETA_0 = -3.641;
     const BETA_1 = 0.106;
     const GAMMA_BAC = 30;
     const PACING_COEF = 0.989;
 
-    // 2. Form Variables
     const totalDrinks = calculateTotalStandardDrinks();
     const userBingeDays = profileData.bingeDays || 0;
     const weightLbs = profileData.weight;
     const hoursElapsed = drinkPlan.duration;
     const genderConstant = profileData.sex === 'male' ? 0.68 : 0.55;
     
-    // Extract food state from checklist.
     const userAteFood = checklistAnswers['food'] === true;
 
-    // A. Historical Baseline Risk (Engine 1)
     const priorLogOdds = BETA_0 + (BETA_1 * userBingeDays);
 
-    // B. Pharmacokinetic BAC (Modified Widmark Formula)
     const gramsAlcohol = totalDrinks * 14;
     const weightGrams = weightLbs * 453.592;
     let rawBac = ((gramsAlcohol) / (weightGrams * genderConstant) * 100) - (0.015 * hoursElapsed);
 
-    // C. Fed-State Discount
     if (userAteFood) {
       rawBac = rawBac * 0.75;
     }
 
-    // D. Normalize BAC (Cannot drop below 0)
     const finalBac = Math.max(0, rawBac);
-
-    // E. Acute Log Odds (Engine 2)
     const acuteLogOdds = (GAMMA_BAC * finalBac) + (PACING_COEF * rapidFlagValue);
-
-    // F. Final Probability (Sigmoid)
     const totalLogOdds = priorLogOdds + acuteLogOdds;
     const probability = 1 / (1 + Math.exp(-totalLogOdds));
 
@@ -103,7 +89,6 @@ export function BaselinePage() {
   };
 
   if (screen === 'checklist') {
-    // The checklist has exactly 4 items. We check if the user has answered all 4.
     const isChecklistComplete = Object.keys(checklistAnswers).length === 4;
 
     return (
@@ -159,6 +144,17 @@ export function BaselinePage() {
               });
               setRapidFlag(0);
               setChecklistAnswers({}); 
+            }}
+            onStartTracking={() => {
+              // Pass the exact Two-Engine state to the locked tracker route
+              navigate('/tracker', {
+                state: {
+                  weightLbs: profileData.weight,
+                  sex: profileData.sex,
+                  bingeDays: profileData.bingeDays || 0,
+                  userAteFood: checklistAnswers['food'] === true
+                }
+              });
             }}
           />
         )}
