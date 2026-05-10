@@ -6,61 +6,94 @@ export function HomePage() {
     <div className="min-h-screen bg-white">
  
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-900 via-blue-700 to-purple-700 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-36">
-          <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-              </div>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
-                Safety is the first step...<br />
-                <span className="text-blue-300">to having a great night!</span>
-              </h1>
-              <p className="text-xl text-blue-100 leading-relaxed mb-8">
-                SafeNite is a real-time, clinical harm-reduction web app that predicts the exact physiological probability of an Alcohol-Induced Blackout (AIB) using a Two-Engine Bayesian model.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/baseline"
-                  className="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center">
-                  Get Started <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link to="/research"
-                  className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 transition-colors text-center">
-                  Learn More
-                </Link>
-              </div>
+      {/* Hero Section */}
+<section className="relative bg-gradient-to-br from-blue-900 via-blue-700 to-purple-700 text-white overflow-hidden">
+  <div
+    className="absolute inset-0 opacity-10"
+    style={{
+      backgroundImage:
+        'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
+      backgroundSize: '60px 60px',
+    }}
+  />
+
+  {/* Sammy Hamster Mascot */}
+  <img
+  src="/sammyhamster.png"
+  alt="SafeNite hamster knight mascot"
+  className="hidden lg:block absolute right-6 bottom-0 w-[280px] xl:w-[350px] z-0 opacity-90 pointer-events-none select-none drop-shadow-2xl"
+/>
+
+  <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 md:py-36">
+    <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+        </div>
+
+        <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
+          Safety is the first step...<br />
+          <span className="text-blue-300">to having a great night!</span>
+        </h1>
+
+        <p className="text-xl text-blue-100 leading-relaxed mb-8">
+          SafeNite is a real-time, clinical harm-reduction web app that predicts the exact physiological probability of an Alcohol-Induced Blackout (AIB) using a Two-Engine Bayesian model.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Link
+            to="/baseline"
+            className="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-50 transition-colors flex items-center gap-2 justify-center"
+          >
+            Get Started <ArrowRight className="w-5 h-5" />
+          </Link>
+
+          <Link
+            to="/research"
+            className="border-2 border-white/40 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 transition-colors text-center"
+          >
+            Learn More
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="hidden md:grid grid-cols-2 gap-4 mt-12 md:mt-0">
+        {[
+          { value: '1 in 6', label: 'college students experience blackouts annually' },
+          { value: '51%', label: 'of blackout episodes involve rapid consumption' },
+          { value: '3x', label: 'higher injury risk during blackout episodes' },
+          { value: '26.7%', label: 'of young adults reported binge drinking just in the past month' },
+        ].map((stat) => (
+          <div
+            key={stat.value}
+            className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20"
+          >
+            <div className="text-3xl font-bold text-white mb-2">
+              {stat.value}
             </div>
-            {/* Stats */}
-            <div className="hidden md:grid grid-cols-2 gap-4 mt-12 md:mt-0">
-              {[
-                { value: '1 in 6', label: 'college students experience blackouts annually' },
-                { value: '51%', label: 'of blackout episodes involve rapid consumption' },
-                { value: '3x', label: 'higher injury risk during blackout episodes' },
-                { value: '26.7%', label: 'of young adults reported binge drinking just in the past month' },
-              ].map((stat) => (
-                <div key={stat.value} className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
-                  <div className="text-3xl font-bold text-white mb-2">{stat.value}</div>
-                  <div className="text-sm text-blue-200 leading-snug">{stat.label}</div>
-                </div>
-              ))}
+            <div className="text-sm text-blue-200 leading-snug">
+              {stat.label}
             </div>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
  
       {/* Mission Section */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-6xl mx-auto px-6">
           <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
             {/* Image placeholder */}
-            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl h-80 md:h-96 flex items-center justify-center mb-10 md:mb-0 border border-blue-200">
-              <div className="text-center text-blue-400">
-                <Heart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-sm font-medium opacity-70">[ Mission Image ]</p>
-              </div>
-            </div>
+                      <div className="md:col-span-1 relative overflow-hidden rounded-2xl h-72 mb-8 md:mb-0 border border-slate-200 shadow-xl">
+            <img
+              src="/milkshake.jpg"
+              alt="Friends supporting each other during a night out"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
+          </div>
             <div>
               <span className="text-blue-600 font-semibold text-sm uppercase tracking-wider">Our Mission</span>
               <h2 className="text-4xl font-bold text-slate-900 mt-3 mb-6">
@@ -174,12 +207,14 @@ export function HomePage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="md:grid md:grid-cols-3 md:gap-8">
             {/* Image placeholder */}
-            <div className="md:col-span-1 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl h-72 flex items-center justify-center mb-8 md:mb-0 border border-slate-200">
-              <div className="text-center text-slate-400">
-                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm font-medium opacity-70">[ Community Image ]</p>
-              </div>
-            </div>
+                      <div className="md:col-span-1 relative overflow-hidden rounded-2xl h-72 mb-8 md:mb-0 border border-slate-200 shadow-xl">
+            <img
+              src="/walkingfriends.jpg"
+              alt="Friends supporting each other during a night out"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
+          </div>
             <div className="md:col-span-2 flex flex-col justify-center">
               <Award className="w-10 h-10 text-blue-600 mb-6" />
               <blockquote className="text-2xl md:text-3xl font-medium text-slate-800 leading-relaxed mb-6">
