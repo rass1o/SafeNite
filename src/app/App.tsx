@@ -4,8 +4,6 @@ import { router } from './routes';
 export interface ProfileData {
   weight: number;
   sex: 'male' | 'female';
-  tolerance: number;
-  blackoutHistory: boolean;
 }
 
 export interface DrinkPlan {
